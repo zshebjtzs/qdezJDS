@@ -1,0 +1,213 @@
+/* ========== 容器与全局氛围 ========== */
+.private-cloud,
+.public-cloud {
+  padding: 28px 32px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(66, 185, 131, 0.12);
+  margin: 24px 0;
+  transition: box-shadow 0.3s ease;
+}
+
+.private-cloud:hover,
+.public-cloud:hover {
+  box-shadow: 0 20px 40px -12px rgba(66, 185, 131, 0.15);
+}
+
+/* ========== 头部区域 ========== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(66, 185, 131, 0.15);
+  position: relative;
+}
+
+/* 标题样式统一 */
+.header h3 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: -0.3px;
+  position: relative;
+  padding-left: 18px;
+}
+
+.header h3::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 26px;
+  background: linear-gradient(to bottom, #42b983, #2ecc71);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(66, 185, 131, 0.3);
+}
+
+/* ========== 文件列表容器 ========== */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ========== 文件项卡片 ========== */
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #fafdfb;
+  border-radius: 16px;
+  border: 1px solid rgba(66, 185, 131, 0.1);
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+
+.file-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: linear-gradient(to bottom, #42b983, #7ee0b0);
+  border-radius: 0 4px 4px 0;
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.file-item:hover {
+  background: #f4faf7;
+  border-color: rgba(66, 185, 131, 0.3);
+  transform: translateX(4px);
+  box-shadow: 0 8px 20px -8px rgba(66, 185, 131, 0.15);
+}
+
+.file-item:hover::before {
+  transform: scaleY(1);
+}
+
+/* 文件信息行 */
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #1e2b39;
+  font-size: 1rem;
+  min-width: 180px;
+  word-break: break-word;
+  transition: color 0.2s;
+}
+
+.file-item:hover .file-name {
+  color: #42b983;
+}
+
+.file-size,
+.file-time {
+  color: #6f8a7c;
+  font-size: 0.85rem;
+  background: #f0f6f3;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #dfece4;
+}
+
+/* ========== 操作按钮通用样式 ========== */
+.file-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.file-actions button {
+  padding: 7px 18px;
+  border: 1px solid transparent;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: white;
+  color: #2c3e50;
+  border-color: #d0ddd5;
+  letter-spacing: 0.3px;
+}
+
+.file-actions button:hover {
+  background: #42b983;
+  color: white;
+  border-color: #42b983;
+  box-shadow: 0 6px 14px rgba(66, 185, 131, 0.3);
+  transform: translateY(-2px);
+}
+
+.file-actions button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(66, 185, 131, 0.2);
+}
+
+/* ========== 上传按钮特殊样式 ========== */
+.header button {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #42b983, #2ecc71);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(66, 185, 131, 0.3);
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  letter-spacing: 0.5px;
+}
+
+.header button:hover {
+  background: linear-gradient(135deg, #359b6e, #27ae60);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(66, 185, 131, 0.4);
+}
+
+/* ========== 空状态与加载 ========== */
+.empty,
+.loading {
+  text-align: center;
+  padding: 50px 20px;
+  color: #8baa97;
+  font-size: 1rem;
+  background: #fafdfb;
+  border-radius: 20px;
+  border: 1px dashed rgba(66, 185, 131, 0.25);
+}
+
+/* ========== 响应式微调 ========== */
+@media (max-width: 700px) {
+  .private-cloud,
+  .public-cloud {
+    padding: 20px 16px;
+  }
+
+  .file-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .file-actions {
+    align-self: flex-end;
+  }
+}

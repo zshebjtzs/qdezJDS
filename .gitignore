@@ -1,0 +1,34 @@
+# 依赖
+node_modules/
+/server/node_modules/
+
+# 构建输出
+dist/
+
+# 环境变量（所有层级）
+.env
+.env.local
+.env.development
+.env.production
+/server/.env
+
+# 数据库初始化脚本（如含示例数据则忽略，若仅建表可考虑公开）
+server/db/init.sql
+
+# 上传文件目录
+/server/uploads/
+
+# 系统与编辑文件
+.DS_Store
+Thumbs.db
+*.log
+
+# 测试 HTTP 请求文件
+test-api.http
+
+# 编辑器和 IDE 临时文件
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
