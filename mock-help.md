@@ -1,0 +1,10 @@
+### 此文档仅针对无后端和数据库的调试时期
+
+当后端开发完成后：  
+
+修改 .env.development，将 VITE_USE_MOCK 改为 false，  
+并设置正确的 VITE_API_BASE_URL。  
+
+重启前端服务（npm run dev），  
+此时所有请求会发送到真实后端。  
+

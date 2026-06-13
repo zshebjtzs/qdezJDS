@@ -11,7 +11,7 @@
 
 ## 技术栈
 - 前端：Vue 3 + Vite + Pinia + Vue Router + Axios
-- 后端：Node.js + Express + MySQL2
+- 后端： Node.js + Express + MySQL2
 - 认证：JWT + bcryptjs
 
 ## 如何运行

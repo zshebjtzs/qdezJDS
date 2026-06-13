@@ -6,7 +6,7 @@ dotenv.config();
 export const generateToken = (user) => {
   const payload = {
     id: user.id,
-    uid: user.uid,               // 新增 uid，方便前端及权限判断
+    uid: user.uid,
     username: user.username,
     department: user.department,
     role: user.role,

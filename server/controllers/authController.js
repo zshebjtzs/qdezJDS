@@ -33,9 +33,7 @@ export const register = async (req, res, next) => {
       uid = generateUid();
     }
 
-    // 注意：密码在这里哈希？你的旧逻辑在 userService.createUser 里做？最好统一
-    // 按照原来你的 userService.createUser 会哈希，但我们保留原方式，需要检查
-    // 为清晰起见，在控制器中哈希密码
+    // 密码在这里哈希
     const hashedPassword = await hashPassword(password);
     await createUser({
       uid,

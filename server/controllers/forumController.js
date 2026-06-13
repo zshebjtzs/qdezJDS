@@ -79,10 +79,10 @@ export const getPostDetail = async (req, res, next) => {
       id: post.id,
       title: post.title,
       content: post.content,
-      userId: post.user_id,      // 必须映射为 userId
+      userId: post.user_id,
       username: post.username,
       authorUid: post.authorUid,
-      role: post.role,           // 发帖人的角色
+      role: post.role, 
       authorAvatar: post.authorAvatar,
       department: post.department,
       forumType: post.forum_type,
@@ -91,7 +91,7 @@ export const getPostDetail = async (req, res, next) => {
       canBrowse: !!post.can_browse,
       viewCount: post.view_count,
       createdAt: post.created_at,
-      moderatorIds: modIds,      // 必须存在，数组
+      moderatorIds: modIds,
       replies: replies.map(r => ({
         id: r.id,
         content: r.content,

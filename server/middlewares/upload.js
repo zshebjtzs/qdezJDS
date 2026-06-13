@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
   }
 });
 
-// 文件类型过滤
+// 文件类型过滤(待定)
 // const fileFilter = (req, file, cb) => {
 //   const allowed = ['image/jpeg', 'image/png', 'application/pdf', 'application/zip', 'text/plain'];
 //   if (allowed.includes(file.mimetype) || file.originalname.match(/\.(jpg|jpeg|png|pdf|zip|txt)$/i)) {

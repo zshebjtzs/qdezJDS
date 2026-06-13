@@ -5,7 +5,7 @@ import {
   getUserPublic, getOwnProfile,
   changeUsername, changePassword, editProfile,
   uploadAvatar, uploadCover,
-  getUserRecentPosts          // 新增
+  getUserRecentPosts
 } from '../controllers/userController.js';
 import { uploadAvatar as avatarUpload, uploadCover as coverUpload } from '../middlewares/upload.js';
 
