@@ -6,6 +6,14 @@
       <router-link to="/legal/privacy" target="_blank">隐私政策</router-link>
       <br>
       <router-link to="/home/UserList">用户列表</router-link>
+      <!-- 管理员入口：仅管理员可见 -->
+      <router-link
+        v-if="isAdmin"
+        :to="`/admin/controller/${userStore.userInfo.uid}`"
+        class="admin-link"
+      >
+        权限管理
+      </router-link>
     </div>
     <div class="footer-copyright">
       © 2026 机电社. All rights reserved.
@@ -14,7 +22,13 @@
 </template>
 
 <script setup>
-// 未来可在此添加更多页脚信息
+import { computed } from 'vue'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
+const isAdmin = computed(() => {
+  return userStore.isLoggedIn && userStore.userInfo?.role === 'admin'
+})
 </script>
 
 <style scoped>
@@ -42,6 +56,16 @@
 
 .footer-links a:hover {
   color: #42b983;
+}
+
+/* 管理员链接专属颜色（紫色） */
+.admin-link {
+  color: purple !important;
+  font-weight: 600;
+}
+
+.admin-link:hover {
+  color: #9b30ff !important; /* 悬停时微调紫色，仍保持紫色系 */
 }
 
 .footer-copyright {

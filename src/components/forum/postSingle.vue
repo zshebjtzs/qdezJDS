@@ -857,4 +857,19 @@ button:disabled {
   margin-top: 8px;
 }
 
+.delete-btn {
+  padding: 4px 14px;
+  background: #fff4f4;
+  border: 1px solid #ffcccc;
+  color: #c0392b;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.delete-btn:hover {
+  background: #c0392b;
+  color: white;
+  border-color: #c0392b;
+}
 </style>

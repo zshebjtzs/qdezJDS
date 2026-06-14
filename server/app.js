@@ -46,7 +46,7 @@ app.use('/api/cloud', cloudRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/users', userListRoutes);
 
-// 版主指派接口（管理员用）
+// 管理员接口
 app.use('/api/admin', adminRoutes);
 
 // 健康检查

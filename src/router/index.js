@@ -64,6 +64,12 @@ const routes = [
     component: () => import('@/components/layout/userList.vue'),
     meta: { requiresAuth: true }
   },
+  {
+    path: '/admin/controller/:adminUid',
+    name: 'AdminController',
+    component: () => import('@/components/admin/adminController.vue'),
+    meta: { requiresAuth: true }
+  },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFound.vue') },
 ]
 
