@@ -58,6 +58,12 @@ const routes = [
     component: () => import('@/components/legal/legalView.vue'),
     meta: { requiresAuth: false }
   },
+  {
+    path: '/home/UserList',
+    name: 'UserList',
+    component: () => import('@/components/layout/userList.vue'),
+    meta: { requiresAuth: true }
+  },
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFound.vue') },
 ]
 

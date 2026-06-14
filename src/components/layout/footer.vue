@@ -4,6 +4,8 @@
     <div class="footer-links">
       <router-link to="/legal/terms" target="_blank">使用条款</router-link>
       <router-link to="/legal/privacy" target="_blank">隐私政策</router-link>
+      <br>
+      <router-link to="/home/UserList">用户列表</router-link>
     </div>
     <div class="footer-copyright">
       © 2026 机电社. All rights reserved.

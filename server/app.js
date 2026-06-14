@@ -7,12 +7,13 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// 导入路由（稍后实现）
+// 导入路由
 import authRoutes from './routes/auth.js';
 import forumRoutes from './routes/forum.js';
 import cloudRoutes from './routes/cloud.js';
 import adminRoutes from './routes/admin.js';
 import userRoutes from './routes/user.js';
+import userListRoutes from './routes/userList.js';
 
 // 导入错误处理中间件
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/forum', forumRoutes);
 app.use('/api/cloud', cloudRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/users', userListRoutes);
 
 // 版主指派接口（管理员用）
 app.use('/api/admin', adminRoutes);

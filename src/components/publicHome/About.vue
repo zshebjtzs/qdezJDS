@@ -18,7 +18,7 @@
       <div class="intro-card enhanced">
         <div class="intro-text">
           <p class="placeholder-text">
-            青岛二中机电社成立于 <span class="highlight">[年份]</span>，是校内最具活力的科技类社团之一。
+            青岛二中机电社成立于 <span class="highlight">2024</span>，是校内最具活力的科技类社团之一。
             我们致力于为对机械、电子、软件感兴趣的同学们提供一个实践与交流的平台。
           </p>
           <p class="placeholder-text">

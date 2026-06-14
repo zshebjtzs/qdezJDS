@@ -34,4 +34,4 @@
 
 ## 7. 联系方式
 数据保护负责人：机电社管理层  
-邮箱：qdezjd@edu.cn
+邮箱：qdezjds@edu.cn
