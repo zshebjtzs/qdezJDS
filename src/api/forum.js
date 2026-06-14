@@ -57,3 +57,13 @@ export const addReply = (commentId, { content, replyToUserId, parentReplyId }) =
 export const getModerators = (categoryId) => {
   return request.get(`/forum/moderators/${categoryId}`)
 }
+
+// 删除评论
+export const deleteComment = (slug, commentId) => {
+  return request.delete(`/forum/comments/${commentId}`)
+}
+
+// 删除回复
+export const deleteReply = (slug, replyId) => {
+  return request.delete(`/forum/replies/${replyId}`)
+}

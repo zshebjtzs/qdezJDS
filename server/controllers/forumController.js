@@ -6,6 +6,7 @@ import * as replyService from '../services/replyService.js';
 import * as viewService from '../services/viewService.js';
 import * as moderatorService from '../services/moderatorService.js';
 import { isModerator } from '../services/moderatorService.js';
+import pool from '../config/db.js';
 
 // ---------- 板块相关 ----------
 
@@ -286,6 +287,66 @@ export const getReplies = async (req, res, next) => {
 
     const result = await replyService.getRepliesByCommentId(commentId, page, pageSize);
     res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 辅助函数：通过帖子ID获取板块信息（用于权限判断）
+async function getCategoryByPost(post) {
+  const [rows] = await pool.query('SELECT * FROM categories WHERE id = ?', [post.category_id]);
+  return rows[0];
+}
+
+// ---------- 删除评论 ----------
+export const deleteComment = async (req, res, next) => {
+  try {
+    const { commentId } = req.params;
+    const comment = await commentService.getCommentById(commentId);
+    if (!comment) return res.status(404).json({ error: '评论不存在' });
+
+    // 获取帖子信息以判断板块权限
+    const post = await forumService.getPostById(comment.post_id);
+    if (!post) return res.status(404).json({ error: '相关帖子不存在' });
+    const category = await getCategoryByPost(post);
+    if (!category) return res.status(404).json({ error: '板块不存在' });
+
+    const isMod = await isModerator(req.user.id, category.id);
+    if (req.user.id !== comment.user_id && req.user.role !== 'admin' && !isMod) {
+      return res.status(403).json({ error: '无权限删除此评论' });
+    }
+
+    // 外键 CASCADE 自动删除该评论下的所有回复
+    await pool.query('DELETE FROM comments WHERE id = ?', [commentId]);
+    res.json({ message: '评论已删除' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ---------- 删除回复 ----------
+export const deleteReply = async (req, res, next) => {
+  try {
+    const { replyId } = req.params;
+    const [replies] = await pool.query('SELECT * FROM replies WHERE id = ?', [replyId]);
+    const reply = replies[0];
+    if (!reply) return res.status(404).json({ error: '回复不存在' });
+
+    const comment = await commentService.getCommentById(reply.comment_id);
+    if (!comment) return res.status(404).json({ error: '所属评论不存在' });
+    const post = await forumService.getPostById(comment.post_id);
+    if (!post) return res.status(404).json({ error: '相关帖子不存在' });
+    const category = await getCategoryByPost(post);
+    if (!category) return res.status(404).json({ error: '板块不存在' });
+
+    const isMod = await isModerator(req.user.id, category.id);
+    if (req.user.id !== reply.user_id && req.user.role !== 'admin' && !isMod) {
+      return res.status(403).json({ error: '无权限删除此回复' });
+    }
+
+    // 外键 CASCADE 自动删除该回复下的所有二级回复
+    await pool.query('DELETE FROM replies WHERE id = ?', [replyId]);
+    res.json({ message: '回复已删除' });
   } catch (err) {
     next(err);
   }

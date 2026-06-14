@@ -27,44 +27,62 @@
     </div>
 
     <hr />
-    <h3>评论 ({{ totalComments }})</h3>
+
+    <!-- 评论区域标题 + 全局展开/收起 -->
+    <div class="comments-header">
+      <h3>评论 ({{ totalComments }})</h3>
+      <button class="toggle-btn" @click="allCommentsCollapsed = !allCommentsCollapsed">
+        {{ allCommentsCollapsed ? '展开全部评论' : '收起全部评论' }}
+      </button>
+    </div>
 
     <!-- 评论列表 -->
-    <div v-for="comment in comments" :key="comment.id" class="comment-block">
-      <div class="comment-header">
-        <router-link :to="`/user/${comment.authorUid}`" class="author-link">
-          <img :src="getAvatar(comment.authorAvatar)" class="avatar-small" />
-          <span :class="usernameClass(comment)">{{ comment.username }}</span>
-        </router-link>
-        <span class="dept-tag" :class="{ 'external-dept': isExternal(comment) }">{{ displayDept(comment) }}</span>
-        <span>{{ formatDate(comment.createdAt) }}</span>
-        <button v-if="post.canReply" class="reply-btn" @click="openReplyDialog(comment.id, comment.userId, comment.username)">回复</button>
-      </div>
-      <div class="comment-content" v-html="renderMarkdown(comment.content)"></div>
-
-      <!-- 该评论的嵌套回复 -->
-      <div v-if="comment.replies && comment.replies.length > 0" class="replies-container">
-        <div v-for="reply in comment.replies" :key="reply.id" :style="{ marginLeft: (reply.depth || 0) * 20 + 'px' }" class="reply-item">
-          <div class="reply-header">
-            <router-link :to="`/user/${reply.authorUid}`" class="author-link">
-              <img :src="getAvatar(reply.authorAvatar)" class="avatar-small" />
-              <span :class="usernameClass(reply)">{{ reply.username }}</span>
-            </router-link>
-            <span class="reply-meta">{{ formatDate(reply.createdAt) }}</span>
-            <button v-if="post.canReply" class="reply-btn" @click="openReplyDialog(comment.id, reply.userId, reply.username, reply.id)">回复</button>
-          </div>
-          <div class="reply-content">
-            <span v-if="reply.replyToUserName" class="reply-to">回复 @{{ reply.replyToUserName }}：</span>
-            <span v-html="renderMarkdown(reply.content)"></span>
-          </div>
+    <div v-if="!allCommentsCollapsed">
+      <div v-for="comment in comments" :key="comment.id" class="comment-block">
+        <div class="comment-header">
+          <router-link :to="`/user/${comment.authorUid}`" class="author-link">
+            <img :src="getAvatar(comment.authorAvatar)" class="avatar-small" />
+            <span :class="usernameClass(comment)">{{ comment.username }}</span>
+          </router-link>
+          <span class="dept-tag" :class="{ 'external-dept': isExternal(comment) }">{{ displayDept(comment) }}</span>
+          <span>{{ formatDate(comment.createdAt) }}</span>
+          <button v-if="post.canReply" class="reply-btn" @click="openReplyDialog(comment.id, comment.userId, comment.username)">回复</button>
+          <button v-if="canDeleteComment(comment)" class="delete-btn" @click="deleteThisComment(comment.id)">删除</button>
         </div>
-        <!-- 回复分页 -->
-        <Pagination
-          v-if="comment.replyTotalPages > 1"
-          :currentPage="comment.replyCurrentPage"
-          :totalPages="comment.replyTotalPages"
-          @page-change="(page) => loadReplies(comment, page)"
-        />
+        <div class="comment-content" v-html="renderMarkdown(comment.content)"></div>
+
+        <!-- 收起/展开该评论的回复 -->
+        <div v-if="comment.replyTotalCount > 0" class="replies-toggle">
+          <button class="toggle-btn small" @click="toggleCommentReplies(comment.id)">
+            {{ isRepliesCollapsed(comment.id) ? `展开回复 (${comment.replyTotalCount})` : '收起回复' }}
+          </button>
+        </div>
+
+        <!-- 该评论的嵌套回复（二级限制） -->
+        <div v-if="!isRepliesCollapsed(comment.id) && comment.replies && comment.replies.length > 0" class="replies-container">
+          <div v-for="reply in comment.replies" :key="reply.id" :style="{ marginLeft: (reply.depth || 0) * 20 + 'px' }" class="reply-item">
+            <div class="reply-header">
+              <router-link :to="`/user/${reply.authorUid}`" class="author-link">
+                <img :src="getAvatar(reply.authorAvatar)" class="avatar-small" />
+                <span :class="usernameClass(reply)">{{ reply.username }}</span>
+              </router-link>
+              <span class="reply-meta">{{ formatDate(reply.createdAt) }}</span>
+              <button v-if="post.canReply" class="reply-btn" @click="openReplyDialog(comment.id, reply.userId, reply.username, reply.id)">回复</button>
+              <button v-if="canDeleteReply(reply)" class="delete-btn" @click="deleteThisReply(reply.id, comment.id)">删除</button>
+            </div>
+            <div class="reply-content">
+              <span v-if="reply.replyToUserName" class="reply-to">回复 @{{ reply.replyToUserName }}：</span>
+              <span v-html="renderMarkdown(reply.content)"></span>
+            </div>
+          </div>
+          <!-- 回复分页 -->
+          <Pagination
+            v-if="comment.replyTotalPages > 1"
+            :currentPage="comment.replyCurrentPage"
+            :totalPages="comment.replyTotalPages"
+            @page-change="(page) => loadReplies(comment, page)"
+          />
+        </div>
       </div>
     </div>
 
@@ -101,7 +119,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { getPostDetail, deletePost, updatePostPermission, getComments, addComment, getReplies, addReply } from '@/api/forum'
+import { getPostDetail, deletePost, updatePostPermission, getComments, addComment, getReplies, addReply, deleteComment, deleteReply } from '@/api/forum'
 import { renderMarkdown } from '@/markdown/renderer.js'
 import MarkdownEditor from '@/markdown/editor.vue'
 import Pagination from '@/components/common/Pagination.vue'
@@ -140,7 +158,7 @@ const newComment = ref('')
 const currentUserId = computed(() => userStore.userInfo?.id)
 const currentUserRole = computed(() => userStore.userInfo?.role)
 
-// 删除权限
+// 权限计算
 const canDelete = computed(() => {
   if (!post.value || !currentUserId.value) return false
   if (currentUserRole.value === 'admin') return true
@@ -148,12 +166,23 @@ const canDelete = computed(() => {
   return (post.value.moderatorIds || []).includes(currentUserId.value)
 })
 
-// 管理权限（修改帖子设置）
 const canManagePerms = computed(() => {
   if (!post.value || !currentUserId.value) return false
   if (currentUserRole.value === 'admin') return true
   return (post.value.moderatorIds || []).includes(currentUserId.value)
 })
+
+// 折叠状态管理
+const allCommentsCollapsed = ref(false) // 默认展开
+const collapsedReplies = reactive({})
+
+const toggleCommentReplies = (commentId) => {
+  collapsedReplies[commentId] = !collapsedReplies[commentId]
+}
+
+const isRepliesCollapsed = (commentId) => {
+  return collapsedReplies[commentId] === true
+}
 
 // 加载帖子详情
 const loadPost = async () => {
@@ -186,53 +215,82 @@ const loadComments = async (page = 1) => {
 const loadReplies = async (comment, page = 1) => {
   try {
     const res = await getReplies(comment.id, page)
-    // 构建嵌套树
+    // 构建二级嵌套（扁平化为最多二级）
     const replyTree = buildReplyTree(res.data)
     comment.replies = replyTree
     comment.replyCurrentPage = page
     comment.replyTotalPages = res.totalPages
+    comment.replyTotalCount = res.total
   } catch (err) {
     console.error(err)
   }
 }
 
-// 扁平回复转嵌套（深度限制3层）
+// 扁平回复转二级嵌套（深度限制为1，即最多一级回复和二级回复）
 const buildReplyTree = (flatReplies) => {
   const map = {}
-  const roots = []
+  const roots = [] // 一级回复
+
   flatReplies.forEach(r => {
     r.children = []
     r.depth = 0
     map[r.id] = r
   })
+
   flatReplies.forEach(r => {
     if (r.parentReplyId && map[r.parentReplyId]) {
       const parent = map[r.parentReplyId]
-      r.depth = (parent.depth || 0) + 1
-      if (r.depth <= 3) {
+      if (parent.depth === 0) {
+        // 父是一级回复，当前回复为二级
+        r.depth = 1
         parent.children.push(r)
       } else {
-        roots.push(r) // 超过3层不再嵌套
+        // 父已经是二级回复，找到它所属的一级回复，将当前回复也作为该一级回复的二级回复
+        let ancestor = parent
+        while (ancestor.depth !== 0) {
+          // 根据 parentReplyId 向上查找一级回复
+          if (ancestor.parentReplyId && map[ancestor.parentReplyId]) {
+            ancestor = map[ancestor.parentReplyId]
+          } else {
+            break
+          }
+        }
+        if (ancestor.depth === 0) {
+          r.depth = 1
+          ancestor.children.push(r)
+        } else {
+          // 找不到一级回复，直接作为一级回复
+          r.depth = 0
+          roots.push(r)
+        }
       }
     } else {
+      // 无父回复或父回复不存在，直接作为一级回复
+      r.depth = 0
       roots.push(r)
     }
   })
-  // 深度优先展平，保留嵌套层级用于缩进
-  const flatten = (list) => {
-    const result = []
-    list.forEach(item => {
-      result.push(item)
-      if (item.children.length > 0) {
-        result.push(...flatten(item.children))
-      }
-    })
-    return result
-  }
-  return flatten(roots)
+
+  // 一级回复按时间排序
+  roots.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+
+  // 展平为渲染列表，每个一级回复后紧跟其二级回复（按时间排序）
+  const result = []
+  roots.forEach(root => {
+    result.push(root)
+    if (root.children.length > 0) {
+      root.children.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+      root.children.forEach(child => {
+        child.depth = 1
+        result.push(child)
+      })
+    }
+  })
+
+  return result
 }
 
-// 打开回复弹窗（parentReplyId 用于回复回复）
+// 打开回复弹窗
 const openReplyDialog = (commentId, replyToUserId, replyToUsername, parentReplyId = null) => {
   replyDialog.visible = true
   replyDialog.commentId = commentId
@@ -253,7 +311,6 @@ const submitReply = async () => {
       parentReplyId: replyDialog.parentReplyId
     })
     replyDialog.visible = false
-    // 重新加载该评论的回复
     const comment = comments.value.find(c => c.id === replyDialog.commentId)
     if (comment) {
       loadReplies(comment, comment.replyCurrentPage || 1)
@@ -269,13 +326,54 @@ const submitComment = async () => {
   try {
     await addComment(slug, postId, newComment.value)
     newComment.value = ''
-    loadComments(1) // 回到第一页
+    loadComments(1)
   } catch (err) {
     alert('评论失败')
   }
 }
 
-// 删除帖子
+// ---------- 删除功能 ----------
+
+// 评论删除权限：作者 / 管理员 / 版主
+const canDeleteComment = (comment) => {
+  const userId = currentUserId.value
+  if (!userId) return false
+  if (currentUserRole.value === 'admin') return true
+  if (comment.userId === userId) return true
+  return (post.value?.moderatorIds || []).includes(userId)
+}
+
+// 回复删除权限：与评论相同
+const canDeleteReply = (reply) => {
+  return canDeleteComment(reply)
+}
+
+const deleteThisComment = async (commentId) => {
+  if (confirm('确定删除该评论及其所有回复？')) {
+    try {
+      await deleteComment(slug, commentId)
+      loadComments(commentCurrentPage.value)
+    } catch (err) {
+      alert('删除失败')
+    }
+  }
+}
+
+const deleteThisReply = async (replyId, commentId) => {
+  if (confirm('确定删除该回复？')) {
+    try {
+      await deleteReply(slug, replyId)
+      const comment = comments.value.find(c => c.id === commentId)
+      if (comment) {
+        loadReplies(comment, comment.replyCurrentPage || 1)
+      }
+    } catch (err) {
+      alert('删除失败')
+    }
+  }
+}
+
+// 删除帖子（原有逻辑）
 const deleteThisPost = async () => {
   if (confirm('确定删除？')) {
     try {
@@ -287,7 +385,7 @@ const deleteThisPost = async () => {
   }
 }
 
-// 修改帖子权限
+// 修改权限
 const togglePerm = async (field, event) => {
   const newValue = event.target.checked
   if (field === 'can_browse') post.value.canBrowse = newValue
@@ -303,27 +401,22 @@ const togglePerm = async (field, event) => {
 
 // 工具函数
 const getAvatar = (url) => url ? `${API_BASE}/${url.replace(/^\//, '')}` : defaultAvatar
-
 const isExternal = (item) => item.role === 'external'
-
 const displayDept = (item) => {
   if (item.role === 'external' || item.department === 'none') return '外部人员'
   const map = { art: '艺术部', mech: '机械部', soft: '软件部' }
   return map[item.department] || item.department
 }
-
 const usernameClass = (item) => {
   if (item.role === 'admin') return 'username-admin'
   if (post.value?.moderatorIds?.includes(item.userId)) return 'username-moderator'
   return ''
 }
-
 const formatDate = (iso) => {
   const d = new Date(iso)
   return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
 }
 
-// 评论分页回调
 const handleCommentPageChange = (page) => {
   loadComments(page)
 }
@@ -735,5 +828,33 @@ button:disabled {
 .btn { padding: 6px 16px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; }
 .btn-primary { background: #42b983; color: white; }
 .btn-cancel { background: #eee; color: #666; }
+
+.toggle-btn {
+  background: none;
+  border: 1px solid #d0ddd5;
+  border-radius: 16px;
+  padding: 4px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #2c7a5c;
+  transition: 0.2s;
+}
+.toggle-btn:hover {
+  background: #f4faf7;
+  border-color: #42b983;
+}
+.toggle-btn.small {
+  font-size: 0.8rem;
+  padding: 2px 10px;
+}
+.comments-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.replies-toggle {
+  margin-top: 8px;
+}
 
 </style>
