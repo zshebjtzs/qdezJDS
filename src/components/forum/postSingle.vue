@@ -1,3 +1,4 @@
+<!-- src/components/forum/postSingle.vue -->
 <template>
   <div class="post-single" v-if="post">
     <h2>{{ post.title }}</h2>
@@ -12,7 +13,7 @@
     </div>
     <div class="content" v-html="renderMarkdown(post.content)"></div>
 
-    <!-- 管理控件：删除按钮 & 权限复选框 -->
+    <!-- 管理控件 -->
     <div v-if="canDelete" class="manage-bar">
       <button @click="deleteThisPost">删除帖子</button>
       <template v-if="canManagePerms">
@@ -20,129 +21,90 @@
           <input type="checkbox" :checked="post.canBrowse" @change="togglePerm('can_browse', $event)" /> 允许浏览
         </label>
         <label>
-          <input type="checkbox" :checked="post.canReply" @change="togglePerm('can_reply', $event)" /> 允许回复
+          <input type="checkbox" :checked="post.canReply" @change="togglePerm('can_reply', $event)" /> 允许评论
         </label>
       </template>
     </div>
 
     <hr />
-    <h3>回复 ({{ post.replies.length }})</h3>
-    <div v-for="reply in post.replies" :key="reply.id" class="reply">
-      <div class="reply-header">
-        <router-link :to="`/user/${reply.authorUid}`" class="author-link">
-          <img :src="getAvatar(reply.authorAvatar)" class="avatar-small" />
-          <span :class="usernameClass(reply)">{{ reply.username }}</span>
-        </router-link>
-        <span class="dept-tag" :class="{ 'external-dept': isExternal(reply) }">{{ displayDept(reply) }}</span>
-        <span>{{ formatDate(reply.createdAt) }}</span>
-      </div>
-      <div class="reply-content" v-html="renderMarkdown(reply.content)"></div>
-    </div>
+    <h3>评论 ({{ totalComments }})</h3>
 
-    <!-- 回复区域 -->
-    <div class="reply-form">
-      <div v-if="canReply">
-        <MarkdownEditor v-model="replyContent" placeholder="输入回复..." :height="200" />
-        <button @click="submitReply" class="reply-submit-btn">回复</button>
+    <!-- 评论列表 -->
+    <div v-for="comment in comments" :key="comment.id" class="comment-block">
+      <div class="comment-header">
+        <router-link :to="`/user/${comment.authorUid}`" class="author-link">
+          <img :src="getAvatar(comment.authorAvatar)" class="avatar-small" />
+          <span :class="usernameClass(comment)">{{ comment.username }}</span>
+        </router-link>
+        <span class="dept-tag" :class="{ 'external-dept': isExternal(comment) }">{{ displayDept(comment) }}</span>
+        <span>{{ formatDate(comment.createdAt) }}</span>
+        <button v-if="post.canReply" class="reply-btn" @click="openReplyDialog(comment.id, comment.userId, comment.username)">回复</button>
       </div>
-      <div v-else>
-        <p class="reply-disabled-hint">禁止回复</p>
-      </div>
-    </div>
-    <!-- Markdown 语法速查面板 -->
-    <details class="markdown-help">
-      <summary>📖 Markdown 快速入门</summary>
-      <div class="help-content">
-        <div class="help-item">
-          <span class="help-desc"><strong>标题</strong>：文字前加 <code>#</code>，几个 <code>#</code> 代表几级标题</span>
-          <span class="help-syntax"><code>## 二级标题</code></span>
-        </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>加粗</strong>：用两个星号包裹文字</span>
-          <span class="help-syntax"><code>**重点内容**</code></span>
-        </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>斜体</strong>：用一个星号包裹文字</span>
-          <span class="help-syntax"><code>*强调内容*</code></span>
-        </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>删除线</strong>：用两个波浪线包裹文字</span>
-          <span class="help-syntax"><code>~~过时信息~~</code></span>
-        </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>链接</strong>：方括号写文字，圆括号写网址</span>
-          <span class="help-syntax"><code>[百度](https://baidu.com)</code></span>
-        </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>无序列表</strong>：短横或星号加空格</span>
-          <span class="help-syntax"><code>- 事项一<br>- 事项二</code></span>
-        </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>有序列表</strong>：数字加点加空格</span>
-          <span class="help-syntax"><code>1. 第一步<br>2. 第二步</code></span>
-        </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>单行代码</strong>：用单个反引号包裹</span>
-          <span class="help-syntax"><code>`console.log('hi')`</code></span>
-        </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>多行代码块</strong>：用三个反引号包裹，可指定语言</span>
-          <div class="help-syntax">
-            <code>```javascript<br>你的代码<br>```</code>
-            <details class="lang-help">
-              <summary>📋 支持的语言及写法</summary>
-              <div class="lang-grid">
-                <span>JavaScript → <code>javascript</code></span>
-                <span>TypeScript → <code>typescript</code></span>
-                <span>Python → <code>python</code></span>
-                <span>Java → <code>java</code></span>
-                <span>C++ → <code>cpp</code></span>
-                <span>C → <code>c</code></span>
-                <span>CSS → <code>css</code></span>
-                <span>HTML → <code>html</code></span>
-                <span>Shell → <code>bash</code> 或 <code>shell</code></span>
-                <span>JSON → <code>json</code></span>
-                <span>Markdown → <code>markdown</code></span>
-              </div>
-              <p class="lang-tip">⚠️ <strong>注意</strong>：C++ 必须写 <code>cpp</code>，不能写 c++。</p>
-            </details>
+      <div class="comment-content" v-html="renderMarkdown(comment.content)"></div>
+
+      <!-- 该评论的嵌套回复 -->
+      <div v-if="comment.replies && comment.replies.length > 0" class="replies-container">
+        <div v-for="reply in comment.replies" :key="reply.id" :style="{ marginLeft: (reply.depth || 0) * 20 + 'px' }" class="reply-item">
+          <div class="reply-header">
+            <router-link :to="`/user/${reply.authorUid}`" class="author-link">
+              <img :src="getAvatar(reply.authorAvatar)" class="avatar-small" />
+              <span :class="usernameClass(reply)">{{ reply.username }}</span>
+            </router-link>
+            <span class="reply-meta">{{ formatDate(reply.createdAt) }}</span>
+            <button v-if="post.canReply" class="reply-btn" @click="openReplyDialog(comment.id, reply.userId, reply.username, reply.id)">回复</button>
+          </div>
+          <div class="reply-content">
+            <span v-if="reply.replyToUserName" class="reply-to">回复 @{{ reply.replyToUserName }}：</span>
+            <span v-html="renderMarkdown(reply.content)"></span>
           </div>
         </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>引用</strong>：段落前加 <code>&gt;</code> 和空格</span>
-          <span class="help-syntax"><code>&gt; 引用内容</code></span>
-        </div>
-        <div class="help-item">
-          <span class="help-desc"><strong>换行</strong>：直接回车即可，空一行表示新段落</span>
-          <span class="help-syntax"><code>无需特殊语法</code></span>
-        </div>
-        <p class="help-tip">💡 右侧可实时预览效果，放心尝试！</p>
+        <!-- 回复分页 -->
+        <Pagination
+          v-if="comment.replyTotalPages > 1"
+          :currentPage="comment.replyCurrentPage"
+          :totalPages="comment.replyTotalPages"
+          @page-change="(page) => loadReplies(comment, page)"
+        />
       </div>
-    </details>
-    <!-- 外部格式手册链接 -->
-    <div class="external-links">
-      <a href="https://help.luogu.com.cn/rules/academic/handbook/markdown" target="_blank" rel="noopener noreferrer">
-        Markdown 格式手册
-      </a>
-      <a href="https://help.luogu.com.cn/rules/academic/handbook/latex" target="_blank" rel="noopener noreferrer">
-        LaTeX 格式手册
-      </a>
-      <a href="https://katex.org/docs/supported.html" target="_blank" rel="noopener noreferrer">
-        KaTeX 官方文档
-      </a>
+    </div>
+
+    <!-- 评论分页 -->
+    <Pagination
+      :currentPage="commentCurrentPage"
+      :totalPages="commentTotalPages"
+      @page-change="handleCommentPageChange"
+    />
+
+    <!-- 发表评论 -->
+    <div v-if="post.canReply" class="comment-form">
+      <h3>发表评论</h3>
+      <MarkdownEditor v-model="newComment" placeholder="输入评论..." :height="200" />
+      <button @click="submitComment" class="submit-btn">提交评论</button>
+    </div>
+
+    <!-- 回复弹窗 -->
+    <div v-if="replyDialog.visible" class="modal-overlay">
+      <div class="modal-card">
+        <h4>{{ replyDialog.placeholder }}</h4>
+        <MarkdownEditor v-model="replyContent" :placeholder="replyDialog.placeholder" :height="200" />
+        <div class="modal-actions">
+          <button class="btn btn-primary" @click="submitReply">提交</button>
+          <button class="btn btn-cancel" @click="replyDialog.visible = false">取消</button>
+        </div>
+      </div>
     </div>
   </div>
   <div v-else class="loading-state">加载中或帖子不存在</div>
-  
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { getPostDetail, addReply, deletePost, updatePostPermission } from '@/api/forum'
+import { getPostDetail, deletePost, updatePostPermission, getComments, addComment, getReplies, addReply } from '@/api/forum'
 import { renderMarkdown } from '@/markdown/renderer.js'
 import MarkdownEditor from '@/markdown/editor.vue'
+import Pagination from '@/components/common/Pagination.vue'
 import defaultAvatar from '@/assets/images/default-avatar.png'
 import { API_BASE } from '@/stores/user'
 
@@ -151,52 +113,181 @@ const router = useRouter()
 const userStore = useUserStore()
 const slug = route.params.slug
 const postId = route.params.postId
+
+// 帖子数据
 const post = ref(null)
+// 评论数据
+const comments = ref([])
+const totalComments = ref(0)
+const commentCurrentPage = ref(1)
+const commentTotalPages = ref(1)
+
+// 回复弹窗状态
+const replyDialog = reactive({
+  visible: false,
+  commentId: null,
+  replyToUserId: null,
+  replyToUsername: '',
+  parentReplyId: null,
+  placeholder: ''
+})
 const replyContent = ref('')
 
-// 当前登录用户信息
+// 新评论内容
+const newComment = ref('')
+
+// 当前用户
 const currentUserId = computed(() => userStore.userInfo?.id)
 const currentUserRole = computed(() => userStore.userInfo?.role)
 
-// 帖子作者 ID（兼容下划线和驼峰）
-const postAuthorId = computed(() => post.value?.userId ?? post.value?.user_id)
-
-// 版主列表（兼容可能的命名差异）
-const moderatorList = computed(() => {
-  return post.value?.moderatorIds || post.value?.moderator_ids || []
-})
-
-// 删除权限：管理员 / 作者本人 / 本板块版主
+// 删除权限
 const canDelete = computed(() => {
   if (!post.value || !currentUserId.value) return false
   if (currentUserRole.value === 'admin') return true
-  if (postAuthorId.value === currentUserId.value) return true
-  return moderatorList.value.includes(currentUserId.value)
+  if (post.value.userId === currentUserId.value) return true
+  return (post.value.moderatorIds || []).includes(currentUserId.value)
 })
 
-// 权限修改（复选框）：仅管理员或本板块版主
+// 管理权限（修改帖子设置）
 const canManagePerms = computed(() => {
   if (!post.value || !currentUserId.value) return false
   if (currentUserRole.value === 'admin') return true
-  return moderatorList.value.includes(currentUserId.value)
+  return (post.value.moderatorIds || []).includes(currentUserId.value)
 })
 
-// 回复权限：管理员/版主/作者总是可以回复，否则看帖子的 canReply 设置
-const canReply = computed(() => {
-  if (!post.value) return false
-  if (canDelete.value || canManagePerms.value) return true
-  return post.value.canReply !== false
-})
-
-// 用户名颜色
-const usernameClass = (item) => {
-  const itemRole = item.role
-  const itemUserId = item.userId ?? item.user_id
-  if (itemRole === 'admin') return 'username-admin'
-  if (moderatorList.value.includes(itemUserId)) return 'username-moderator'
-  return ''
+// 加载帖子详情
+const loadPost = async () => {
+  try {
+    post.value = await getPostDetail(slug, postId)
+  } catch (err) {
+    console.error(err)
+  }
 }
 
+// 加载评论（分页）
+const loadComments = async (page = 1) => {
+  try {
+    const res = await getComments(slug, postId, page)
+    comments.value = res.data
+    totalComments.value = res.total
+    commentCurrentPage.value = res.page
+    commentTotalPages.value = res.totalPages
+
+    // 为每条评论加载第一页回复
+    comments.value.forEach(comment => {
+      loadReplies(comment, 1)
+    })
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+// 加载某评论的回复
+const loadReplies = async (comment, page = 1) => {
+  try {
+    const res = await getReplies(comment.id, page)
+    // 构建嵌套树
+    const replyTree = buildReplyTree(res.data)
+    comment.replies = replyTree
+    comment.replyCurrentPage = page
+    comment.replyTotalPages = res.totalPages
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+// 扁平回复转嵌套（深度限制3层）
+const buildReplyTree = (flatReplies) => {
+  const map = {}
+  const roots = []
+  flatReplies.forEach(r => {
+    r.children = []
+    r.depth = 0
+    map[r.id] = r
+  })
+  flatReplies.forEach(r => {
+    if (r.parentReplyId && map[r.parentReplyId]) {
+      const parent = map[r.parentReplyId]
+      r.depth = (parent.depth || 0) + 1
+      if (r.depth <= 3) {
+        parent.children.push(r)
+      } else {
+        roots.push(r) // 超过3层不再嵌套
+      }
+    } else {
+      roots.push(r)
+    }
+  })
+  // 深度优先展平，保留嵌套层级用于缩进
+  const flatten = (list) => {
+    const result = []
+    list.forEach(item => {
+      result.push(item)
+      if (item.children.length > 0) {
+        result.push(...flatten(item.children))
+      }
+    })
+    return result
+  }
+  return flatten(roots)
+}
+
+// 打开回复弹窗（parentReplyId 用于回复回复）
+const openReplyDialog = (commentId, replyToUserId, replyToUsername, parentReplyId = null) => {
+  replyDialog.visible = true
+  replyDialog.commentId = commentId
+  replyDialog.replyToUserId = replyToUserId
+  replyDialog.replyToUsername = replyToUsername
+  replyDialog.parentReplyId = parentReplyId
+  replyDialog.placeholder = `回复 @${replyToUsername} ...`
+  replyContent.value = ''
+}
+
+// 提交回复
+const submitReply = async () => {
+  if (!replyContent.value.trim()) return
+  try {
+    await addReply(replyDialog.commentId, {
+      content: replyContent.value,
+      replyToUserId: replyDialog.replyToUserId,
+      parentReplyId: replyDialog.parentReplyId
+    })
+    replyDialog.visible = false
+    // 重新加载该评论的回复
+    const comment = comments.value.find(c => c.id === replyDialog.commentId)
+    if (comment) {
+      loadReplies(comment, comment.replyCurrentPage || 1)
+    }
+  } catch (err) {
+    alert('回复失败')
+  }
+}
+
+// 提交新评论
+const submitComment = async () => {
+  if (!newComment.value.trim()) return
+  try {
+    await addComment(slug, postId, newComment.value)
+    newComment.value = ''
+    loadComments(1) // 回到第一页
+  } catch (err) {
+    alert('评论失败')
+  }
+}
+
+// 删除帖子
+const deleteThisPost = async () => {
+  if (confirm('确定删除？')) {
+    try {
+      await deletePost(slug, postId)
+      router.push(`/forum/${slug}`)
+    } catch (err) {
+      alert('删除失败')
+    }
+  }
+}
+
+// 修改帖子权限
 const togglePerm = async (field, event) => {
   const newValue = event.target.checked
   if (field === 'can_browse') post.value.canBrowse = newValue
@@ -210,48 +301,10 @@ const togglePerm = async (field, event) => {
   }
 }
 
-const submitReply = async () => {
-  if (!replyContent.value.trim()) return
-  try {
-    await addReply(slug, postId, replyContent.value)
-    replyContent.value = ''
-    await loadPost()
-  } catch (err) {
-    alert('回复失败')
-  }
-}
+// 工具函数
+const getAvatar = (url) => url ? `${API_BASE}/${url.replace(/^\//, '')}` : defaultAvatar
 
-const deleteThisPost = async () => {
-  if (confirm('确定删除该帖子吗？')) {
-    try {
-      await deletePost(slug, postId)
-      router.push(`/forum/${slug}`)
-    } catch (err) {
-      alert('删除失败')
-    }
-  }
-}
-
-const loadPost = async () => {
-  try {
-    post.value = await getPostDetail(slug, postId)
-  } catch (err) {
-    console.error(err)
-  }
-}
-
-const formatDate = (iso) => {
-  const d = new Date(iso)
-  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
-}
-
-const getAvatar = (avatarUrl) => {
-  return avatarUrl ? `${API_BASE}/${avatarUrl.replace(/^\//, '')}` : defaultAvatar
-}
-
-const isExternal = (item) => {
-  return item.role === 'external'
-}
+const isExternal = (item) => item.role === 'external'
 
 const displayDept = (item) => {
   if (item.role === 'external' || item.department === 'none') return '外部人员'
@@ -259,7 +312,27 @@ const displayDept = (item) => {
   return map[item.department] || item.department
 }
 
-onMounted(loadPost)
+const usernameClass = (item) => {
+  if (item.role === 'admin') return 'username-admin'
+  if (post.value?.moderatorIds?.includes(item.userId)) return 'username-moderator'
+  return ''
+}
+
+const formatDate = (iso) => {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
+}
+
+// 评论分页回调
+const handleCommentPageChange = (page) => {
+  loadComments(page)
+}
+
+onMounted(() => {
+  loadPost().then(() => {
+    if (post.value) loadComments()
+  })
+})
 </script>
 
 <style scoped>
@@ -633,4 +706,34 @@ button:disabled {
   color: #fff;
   border-color: #42b983;
 }
+/* 新增 */
+.reply-btn {
+  background: none;
+  border: 1px solid #d0ddd5;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  margin-left: 8px;
+}
+.reply-btn:hover { background: #f0f0f0; }
+.replies-container { margin-top: 10px; padding-left: 16px; border-left: 2px solid #eef3f0; }
+.reply-item { margin-bottom: 8px; }
+.reply-to { color: #2c7a5c; font-weight: 500; margin-right: 4px; }
+.submit-btn { margin-top: 12px; padding: 8px 22px; border-radius: 24px; background: #42b983; color: white; border: none; font-weight: 600; cursor: pointer; }
+.comment-form { margin-top: 24px; }
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.3);
+  display: flex; justify-content: center; align-items: center; z-index: 100;
+}
+.modal-card {
+  background: white; padding: 24px; border-radius: 16px;
+  width: 90%; max-width: 600px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+.btn { padding: 6px 16px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; }
+.btn-primary { background: #42b983; color: white; }
+.btn-cancel { background: #eee; color: #666; }
+
 </style>

@@ -1,15 +1,16 @@
+<!-- src/components/forum/postList.vue -->
 <template>
   <div class="post-list">
     <h2>{{ categoryName }}</h2>
     <div class="actions">
-      <button @click="sortMode = 'time'" :class="{ active: sortMode === 'time' }">按时间</button>
-      <button @click="sortMode = 'hot'" :class="{ active: sortMode === 'hot' }">按热度</button>
+      <button @click="changeSort('time')" :class="{ active: sortMode === 'time' }">按时间</button>
+      <button @click="changeSort('hot')" :class="{ active: sortMode === 'hot' }">按热度</button>
       <router-link :to="`/forum/${slug}/new`" class="new-post-link">发新帖</router-link>
     </div>
 
     <div v-if="loading" class="loading-state">加载中...</div>
     <div v-else>
-      <div v-for="post in sortedPosts" :key="post.id" class="post-card">
+      <div v-for="post in posts" :key="post.id" class="post-card">
         <router-link :to="`/forum/${slug}/${post.id}`" class="post-title">{{ post.title }}</router-link>
         <div class="post-meta">
           <router-link :to="`/user/${post.authorUid}`" class="author-link">
@@ -19,45 +20,102 @@
           <span class="dept-tag" :class="{ 'external-dept': isExternal(post) }">{{ displayDept(post) }}</span>
           <span>{{ formatDate(post.createdAt) }}</span>
           <span>浏览: {{ post.viewCount }}</span>
-          <span>回复: {{ post.replyCount }}</span>
+          <span>评论: {{ post.commentCount || 0 }}</span>
         </div>
         <button v-if="canDeletePost(post)" @click="deleteThisPost(post)" class="delete-btn">删除</button>
       </div>
-      <div v-if="sortedPosts.length === 0" class="empty-state">暂无帖子</div>
+      <div v-if="posts.length === 0" class="empty-state">暂无帖子</div>
     </div>
+
+    <Pagination
+      :currentPage="currentPage"
+      :totalPages="totalPages"
+      @page-change="handlePageChange"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getPostsByCategory, deletePost } from '@/api/forum'
-import { sortByTime, sortByHot } from '@/utils/forumSort'
+import Pagination from '@/components/common/Pagination.vue'
 import defaultAvatar from '@/assets/images/default-avatar.png'
 import { API_BASE } from '@/stores/user'
 
 const route = useRoute()
 const userStore = useUserStore()
 const slug = route.params.slug
-const loading = ref(true)
+
+// 数据
 const posts = ref([])
 const categoryName = ref('')
-const sortMode = ref('time')
+const loading = ref(true)
 const moderatorIds = ref([])
+const currentPage = ref(1)
+const totalPages = ref(1)
 
-const sortedPosts = computed(() => {
-  if (sortMode.value === 'hot') return sortByHot(posts.value)
-  return sortByTime(posts.value)
-})
+// 当前排序方式，默认按时间
+const sortMode = ref('time')
 
+// 加载帖子（分页 + 排序）
+const loadPosts = async (page = 1, sort = sortMode.value) => {
+  loading.value = true
+  try {
+    const res = await getPostsByCategory(slug, page, 10, sort)
+    posts.value = res.data
+    categoryName.value = res.categoryName
+    moderatorIds.value = res.moderatorIds
+    currentPage.value = res.page
+    totalPages.value = res.totalPages
+  } catch (err) {
+    console.error(err)
+  } finally {
+    loading.value = false
+  }
+}
+
+// 切换排序方式，重新加载第一页
+const changeSort = (sort) => {
+  sortMode.value = sort
+  loadPosts(1, sort)
+}
+
+// 分页回调
+const handlePageChange = (page) => {
+  loadPosts(page, sortMode.value)
+}
+
+// 删除权限判断
 const canDeletePost = (post) => {
   const userId = userStore.userInfo?.id
   if (!userId) return false
   if (userStore.userInfo.role === 'admin') return true
   if (post.userId === userId) return true
-  if (moderatorIds.value.includes(userId)) return true
-  return false
+  return moderatorIds.value.includes(userId)
+}
+
+const deleteThisPost = async (post) => {
+  if (confirm('确定删除？')) {
+    try {
+      await deletePost(slug, post.id)
+      loadPosts(currentPage.value, sortMode.value) // 重新加载当前页
+    } catch (err) {
+      alert('删除失败')
+    }
+  }
+}
+
+// 工具函数
+const getAvatar = (url) => url ? `${API_BASE}/${url.replace(/^\//, '')}` : defaultAvatar
+
+const isExternal = (post) => post.userRole === 'external'
+
+const displayDept = (post) => {
+  if (post.userRole === 'external' || post.department === 'none') return '外部人员'
+  const map = { art: '艺术部', mech: '机械部', soft: '软件部' }
+  return map[post.department] || post.department
 }
 
 const usernameClass = (post) => {
@@ -66,53 +124,18 @@ const usernameClass = (post) => {
   return ''
 }
 
-const loadPosts = async () => {
-  try {
-    const res = await getPostsByCategory(slug)
-    posts.value = res.posts
-    categoryName.value = res.categoryName
-    moderatorIds.value = res.moderatorIds
-  } catch (err) {
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
-}
-
-const deleteThisPost = async (post) => {
-  if (confirm('确定删除？')) {
-    try {
-      await deletePost(slug, post.id)
-      await loadPosts()
-    } catch (err) {
-      alert('删除失败')
-    }
-  }
-}
-
 const formatDate = (iso) => {
   const d = new Date(iso)
   return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()} ${d.getHours()}:${d.getMinutes()}`
 }
 
-const getAvatar = (avatarUrl) => {
-  return avatarUrl ? `${API_BASE}/${avatarUrl.replace(/^\//, '')}` : defaultAvatar
-}
-
-const isExternal = (post) => {
-  return post.userRole === 'external'
-}
-
-const displayDept = (post) => {
-  if (post.userRole === 'external' || post.department === 'none') return '外部人员'
-  const map = { art: '艺术部', mech: '机械部', soft: '软件部' }
-  return map[post.department] || post.department
-}
-
-onMounted(loadPosts)
+onMounted(() => loadPosts())
 </script>
 
 <style scoped>
+
+.avatar-small { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+
 .post-list {
   max-width: 960px;
   margin: 0 auto;

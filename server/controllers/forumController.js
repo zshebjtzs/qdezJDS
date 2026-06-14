@@ -1,10 +1,13 @@
 // server/controllers/forumController.js
 import * as forumService from '../services/forumService.js';
 import * as categoryService from '../services/categoryService.js';
+import * as commentService from '../services/commentService.js';
 import * as replyService from '../services/replyService.js';
 import * as viewService from '../services/viewService.js';
 import * as moderatorService from '../services/moderatorService.js';
 import { isModerator } from '../services/moderatorService.js';
+
+// ---------- 板块相关 ----------
 
 // 获取公开的板块列表
 export const getCategories = async (req, res, next) => {
@@ -16,37 +19,46 @@ export const getCategories = async (req, res, next) => {
   }
 };
 
-// 获取指定板块的帖子列表
+// ---------- 帖子列表 ----------
+
+// 获取指定板块的帖子列表（分页）
 export const getPosts = async (req, res, next) => {
   try {
     const { slug } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const sortBy = req.query.sortBy || 'time';
+
     const category = await categoryService.getCategoryBySlug(slug);
     if (!category) return res.status(404).json({ error: '板块不存在' });
 
-    // 权限检查...
-    const posts = await forumService.getPostsByCategory(category.id, req.user?.id);
-    
-    // 获取该板块版主 ID 列表
-    const modIds = await moderatorService.getModeratorsByCategory(category.id); // 需引入此服务
-    
-    // 将 canReply/canBrowse 数字转换为布尔值
-    const postsMapped = posts.map(p => ({
-      ...p,
-      canReply: !!p.canReply,
-      canBrowse: !!p.canBrowse
-    }));
+    // 权限检查：内部板块仅 internal/admin/版主 可访问
+    if (category.type === 'internal') {
+      if (!req.user || (req.user.role !== 'internal' && req.user.role !== 'admin')) {
+        if (!req.user || !(await isModerator(req.user.id, category.id))) {
+          return res.status(403).json({ error: '无权访问内部板块' });
+        }
+      }
+    }
 
+    const result = await forumService.getPostsByCategory(category.id, req.user?.id, page, pageSize, sortBy);
+    
+    // 获取该板块版主 ID 列表（仍需要，用于前端判断版主权限）
+    const modIds = await moderatorService.getModeratorsByCategory(category.id);
+    
     res.json({
       categoryName: category.name,
       moderatorIds: modIds,
-      posts: postsMapped
+      ...result          // 展开 data, total, page, pageSize, totalPages
     });
   } catch (err) {
     next(err);
   }
 };
 
-// 获取帖子详情（含回复）
+// ---------- 帖子详情 ----------
+
+// 获取帖子详情（不包含评论和回复，仅帖子本身信息）
 export const getPostDetail = async (req, res, next) => {
   try {
     const { postId } = req.params;
@@ -71,17 +83,16 @@ export const getPostDetail = async (req, res, next) => {
       await viewService.recordView(req.user.id, post.id);
     }
 
-    const replies = await replyService.getRepliesByPostId(post.id);
     const modIds = await moderatorService.getModeratorsByCategory(category.id);
 
-    // 组装数据，关键：使用驼峰命名
+    // 组装数据（不再包含 replies 列表，评论单独请求）
     const postData = {
       id: post.id,
       title: post.title,
       content: post.content,
       userId: post.user_id,
       username: post.username,
-      authorUid: post.authorUid,
+      authorUid: post.authorUid,          // 来自 getPostById 的扩展字段
       role: post.role, 
       authorAvatar: post.authorAvatar,
       department: post.department,
@@ -91,18 +102,7 @@ export const getPostDetail = async (req, res, next) => {
       canBrowse: !!post.can_browse,
       viewCount: post.view_count,
       createdAt: post.created_at,
-      moderatorIds: modIds,
-      replies: replies.map(r => ({
-        id: r.id,
-        content: r.content,
-        userId: r.userId,
-        username: r.username,
-        authorUid: r.authorUid,
-        role: r.role,
-        authorAvatar: r.authorAvatar,
-        department: r.department,
-        createdAt: r.createdAt,
-      })),
+      moderatorIds: modIds
     };
 
     res.json(postData);
@@ -110,6 +110,8 @@ export const getPostDetail = async (req, res, next) => {
     next(err);
   }
 };
+
+// ---------- 帖子操作 ----------
 
 // 发帖
 export const addPost = async (req, res, next) => {
@@ -210,25 +212,80 @@ export const deletePost = async (req, res, next) => {
   }
 };
 
-// 创建回复
-export const addReply = async (req, res, next) => {
+// ---------- 评论接口 ----------
+
+// 发表评论
+export const addComment = async (req, res, next) => {
   try {
     const { postId } = req.params;
     const { content } = req.body;
-    if (!content) return res.status(400).json({ error: '回复内容不能为空' });
+    if (!content) return res.status(400).json({ error: '评论内容不能为空' });
 
     const post = await forumService.getPostById(postId);
     if (!post) return res.status(404).json({ error: '帖子不存在' });
 
-    // 检查帖子是否允许回复
+    // 检查帖子是否允许评论
     if (!post.can_reply) {
-        const isModeratorOrAdmin = req.user.role === 'admin'
-            || await isModerator(req.user.id, post.category_id);
-        if (!isModeratorOrAdmin) return res.status(403).json({ error: '该帖已禁止回复' });
+      return res.status(403).json({ error: '该帖已禁止评论' });
     }
 
-    const reply = await replyService.createReply(postId, req.user.id, content);
-    res.status(201).json({ id: reply.id, message: '回复成功' });
+    const commentId = await commentService.createComment(postId, req.user.id, content);
+    res.status(201).json({ id: commentId, message: '评论成功' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 获取评论列表（分页）
+export const getComments = async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+
+    const result = await commentService.getCommentsByPostId(postId, page, pageSize);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ---------- 回复接口（针对评论） ----------
+
+// 发表回复
+export const addReply = async (req, res, next) => {
+  try {
+    const { commentId } = req.params;
+    const { content, replyToUserId, parentReplyId } = req.body;
+    if (!content) return res.status(400).json({ error: '回复内容不能为空' });
+    if (!replyToUserId) return res.status(400).json({ error: '缺少被回复用户ID' });
+
+    const comment = await commentService.getCommentById(commentId);
+    if (!comment) return res.status(404).json({ error: '评论不存在' });
+
+    // 通过评论找到帖子，检查帖子是否允许评论
+    const post = await forumService.getPostById(comment.post_id);
+    if (!post) return res.status(404).json({ error: '相关帖子不存在' });
+    if (!post.can_reply) {
+      return res.status(403).json({ error: '该帖已禁止评论' });
+    }
+
+    await replyService.createReply(commentId, req.user.id, replyToUserId, content, parentReplyId || null);
+    res.status(201).json({ message: '回复成功' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 获取回复列表（分页）
+export const getReplies = async (req, res, next) => {
+  try {
+    const { commentId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+
+    const result = await replyService.getRepliesByCommentId(commentId, page, pageSize);
+    res.json(result);
   } catch (err) {
     next(err);
   }

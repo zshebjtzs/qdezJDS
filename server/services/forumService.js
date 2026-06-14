@@ -2,8 +2,8 @@
 import pool from '../config/db.js';
 
 // 获取指定板块的所有帖子（含作者信息、回复数）
-export const getPostsByCategory = async (categoryId, userId = null) => {
-  let query = `
+export const getPostsByCategory = async (categoryId, userId = null, page = 1, pageSize = 10, sortBy = 'time') => {
+  const selectFields = `
     SELECT 
       p.id, p.title, p.content, p.user_id AS userId, 
       u.username, u.uid AS authorUid, u.role AS userRole, u.avatar_url AS authorAvatar,
@@ -11,23 +11,31 @@ export const getPostsByCategory = async (categoryId, userId = null) => {
       p.category_id AS categoryId, p.view_count AS viewCount,
       p.can_reply AS canReply, p.can_browse AS canBrowse,
       p.created_at AS createdAt,
-      (SELECT COUNT(*) FROM replies WHERE post_id = p.id) AS replyCount
-    FROM posts p
-    JOIN users u ON p.user_id = u.id
-    WHERE p.category_id = ?
+      (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS commentCount
   `;
+  const fromClause = `FROM posts p JOIN users u ON p.user_id = u.id`;
+  let whereClause = `WHERE p.category_id = ?`;
   const params = [categoryId];
 
   if (userId) {
-    query += ` AND (p.can_browse = TRUE OR p.user_id = ? OR 
+    whereClause += ` AND (p.can_browse = TRUE OR p.user_id = ? OR 
               EXISTS (SELECT 1 FROM moderators m WHERE m.user_id = ? AND m.category_id = ?) OR
               EXISTS (SELECT 1 FROM users u2 WHERE u2.id = ? AND u2.role = 'admin'))`;
     params.push(userId, userId, categoryId, userId);
   }
 
-  query += ' ORDER BY p.created_at DESC';
-  const [rows] = await pool.query(query, params);
-  return rows;
+  // 排序
+  let orderClause;
+  if (sortBy === 'hot') {
+    orderClause = `ORDER BY (commentCount * 5 + viewCount) DESC, created_at DESC`;
+  } else {
+    orderClause = `ORDER BY p.created_at DESC`;
+  }
+
+  const baseQuery = `${selectFields} ${fromClause} ${whereClause} ${orderClause}`;
+
+  const { paginate } = await import('../utils/pagination.js');
+  return paginate({ baseQuery, params, page, pageSize });
 };
 
 // 获取单个帖子详情
