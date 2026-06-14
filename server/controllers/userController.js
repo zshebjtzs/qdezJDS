@@ -6,6 +6,7 @@ import {
 import { comparePassword, hashPassword } from '../utils/bcrypt.js';
 
 import path from 'path';
+import pool from '../config/db.js';
 import fs from 'fs/promises';
 import sharp from 'sharp';
 import { PROJECT_ROOT } from '../config/paths.js';
@@ -206,4 +207,19 @@ export const getUserRecentPosts = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+// 获取封禁状态
+export const getMyBans = async (req, res, next) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT type, banned_until 
+       FROM bans 
+       WHERE user_id = ? AND (banned_until IS NULL OR banned_until > NOW())`,
+      [req.user.id]
+    );
+    const bans = { post: false, cloud: false, account: false };
+    rows.forEach(r => { bans[r.type] = true });
+    res.json(bans);
+  } catch (err) { next(err); }
 };

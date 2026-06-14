@@ -5,7 +5,7 @@ import {
   getUserPublic, getOwnProfile,
   changeUsername, changePassword, editProfile,
   uploadAvatar, uploadCover,
-  getUserRecentPosts
+  getUserRecentPosts, getMyBans
 } from '../controllers/userController.js';
 import { uploadAvatar as avatarUpload, uploadCover as coverUpload } from '../middlewares/upload.js';
 
@@ -21,6 +21,7 @@ router.patch('/me/password', authMiddleware, changePassword);
 router.patch('/me/profile', authMiddleware, editProfile);
 router.post('/me/avatar', authMiddleware, avatarUpload.single('avatar'), uploadAvatar);
 router.post('/me/cover', authMiddleware, coverUpload.single('cover'), uploadCover);
+router.get('/me/bans', authMiddleware, getMyBans);
 
 // ---------- 板块三接口 ----------
 // 获取某用户最近帖子 (例如 /api/user/Ua3K9mR2xP7vQ1L/posts?limit=4)

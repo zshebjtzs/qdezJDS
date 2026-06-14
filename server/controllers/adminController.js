@@ -72,3 +72,12 @@ export const revokeModerator = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getUserBans = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const details = await adminService.getUserBanDetails(userId);
+    if (!details) return res.status(404).json({ error: '用户不存在' });
+    res.json(details);
+  } catch (err) { next(err); }
+};

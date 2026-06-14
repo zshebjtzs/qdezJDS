@@ -1,6 +1,14 @@
 // server/routes/admin.js
 import express from 'express';
-import { listUsers, listCategories, banUser, unbanUser, grantModerator, revokeModerator } from '../controllers/adminController.js';
+import {
+  listUsers,
+  listCategories,
+  banUser,
+  unbanUser,
+  grantModerator,
+  revokeModerator,
+  getUserBans
+} from '../controllers/adminController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -41,6 +49,11 @@ router.post('/grant-mod', authMiddleware, (req, res, next) => {
 router.post('/revoke-mod', authMiddleware, (req, res, next) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
   revokeModerator(req, res, next);
+});
+
+router.get('/user/:userId/bans', authMiddleware, (req, res, next) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
+  getUserBans(req, res, next);
 });
 
 export default router;

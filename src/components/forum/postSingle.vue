@@ -46,7 +46,7 @@
           </router-link>
           <span class="dept-tag" :class="{ 'external-dept': isExternal(comment) }">{{ displayDept(comment) }}</span>
           <span>{{ formatDate(comment.createdAt) }}</span>
-          <button v-if="post.canReply" class="reply-btn" @click="openReplyDialog(comment.id, comment.userId, comment.username)">回复</button>
+          <button v-if="canReply" class="reply-btn" @click="openReplyDialog(comment.id, comment.userId, comment.username)">回复</button>
           <button v-if="canDeleteComment(comment)" class="delete-btn" @click="deleteThisComment(comment.id)">删除</button>
         </div>
         <div class="comment-content" v-html="renderMarkdown(comment.content)"></div>
@@ -67,7 +67,7 @@
                 <span :class="usernameClass(reply)">{{ reply.username }}</span>
               </router-link>
               <span class="reply-meta">{{ formatDate(reply.createdAt) }}</span>
-              <button v-if="post.canReply" class="reply-btn" @click="openReplyDialog(comment.id, reply.userId, reply.username, reply.id)">回复</button>
+              <button v-if="canReply" class="reply-btn" @click="openReplyDialog(comment.id, reply.userId, reply.username, reply.id)">回复</button>
               <button v-if="canDeleteReply(reply)" class="delete-btn" @click="deleteThisReply(reply.id, comment.id)">删除</button>
             </div>
             <div class="reply-content">
@@ -94,7 +94,7 @@
     />
 
     <!-- 发表评论 -->
-    <div v-if="post.canReply" class="comment-form">
+    <div v-if="canReply" class="comment-form">
       <h3>发表评论</h3>
       <MarkdownEditor v-model="newComment" placeholder="输入评论..." :height="200" />
       <button @click="submitComment" class="submit-btn">提交评论</button>
@@ -131,6 +131,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const slug = route.params.slug
 const postId = route.params.postId
+const canReply = computed(() => post.value?.canReply && !userStore.bans.post);
 
 // 帖子数据
 const post = ref(null)

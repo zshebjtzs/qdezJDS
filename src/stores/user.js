@@ -9,6 +9,7 @@ export const useUserStore = defineStore('user', {
     token: localStorage.getItem('token') || null,
     userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
     avatarTimestamp: 0,
+    bans: { post: false, cloud: false, account: false }, // 新增封禁状态
   }),
   getters: {
     isLoggedIn: (state) => !!state.token && !!state.userInfo,
@@ -34,11 +35,25 @@ export const useUserStore = defineStore('user', {
     logout() {
       this.token = null
       this.userInfo = null
+      this.bans = { post: false, cloud: false, account: false }
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
     },
     updateAvatarTimestamp() {
-      this.avatarTimestamp = Date.now();
+      this.avatarTimestamp = Date.now()
+    },
+    setBans(bans) {
+      this.bans = bans
+    },
+    async fetchBans() {
+      try {
+        // 引入 request 需要动态导入避免循环依赖
+        const { default: request } = await import('@/api/request')
+        const res = await request.get('/user/me/bans')
+        this.setBans(res)
+      } catch (e) {
+        console.error('获取封禁状态失败', e)
+      }
     },
   },
 })

@@ -5,7 +5,13 @@ import pool from '../config/db.js';
 export const getNormalUsers = async (q, page, pageSize) => {
   let baseQuery = `
     SELECT u.id, u.uid, u.username, u.role, u.is_active,
-           EXISTS(SELECT 1 FROM bans b WHERE b.user_id = u.id AND b.type = 'account' AND (b.banned_until IS NULL OR b.banned_until > NOW())) AS is_temp_banned
+           EXISTS(SELECT 1 FROM bans b WHERE b.user_id = u.id AND b.type = 'account' AND (b.banned_until IS NULL OR b.banned_until > NOW())) AS is_temp_banned,
+           EXISTS(SELECT 1 FROM bans b WHERE b.user_id = u.id AND b.type = 'post' AND (b.banned_until IS NULL OR b.banned_until > NOW())) AS post_banned,
+           EXISTS(SELECT 1 FROM bans b WHERE b.user_id = u.id AND b.type = 'cloud' AND (b.banned_until IS NULL OR b.banned_until > NOW())) AS cloud_banned,
+           EXISTS(SELECT 1 FROM bans b WHERE b.user_id = u.id AND b.type = 'account' AND (b.banned_until IS NULL OR b.banned_until > NOW())) AS account_banned,
+           (SELECT banned_until FROM bans b WHERE b.user_id = u.id AND b.type = 'post' AND (b.banned_until IS NULL OR b.banned_until > NOW()) LIMIT 1) AS post_ban_until,
+           (SELECT banned_until FROM bans b WHERE b.user_id = u.id AND b.type = 'cloud' AND (b.banned_until IS NULL OR b.banned_until > NOW()) LIMIT 1) AS cloud_ban_until,
+           (SELECT banned_until FROM bans b WHERE b.user_id = u.id AND b.type = 'account' AND (b.banned_until IS NULL OR b.banned_until > NOW()) LIMIT 1) AS account_ban_until
     FROM users u
     WHERE u.role != 'admin'
   `;
@@ -53,4 +59,20 @@ export const revokeModerator = async (userId, categoryId) => {
 export const isModeratorInCategory = async (userId, categoryId) => {
   const [rows] = await pool.query('SELECT 1 FROM moderators WHERE user_id = ? AND category_id = ?', [userId, categoryId]);
   return rows.length > 0;
+};
+
+// 获取单个用户的封禁详情（用于管理员面板弹窗刷新）
+export const getUserBanDetails = async (userId) => {
+  const [rows] = await pool.query(`
+    SELECT 
+      EXISTS(SELECT 1 FROM bans b WHERE b.user_id = u.id AND b.type = 'post' AND (b.banned_until IS NULL OR b.banned_until > NOW())) AS post_banned,
+      EXISTS(SELECT 1 FROM bans b WHERE b.user_id = u.id AND b.type = 'cloud' AND (b.banned_until IS NULL OR b.banned_until > NOW())) AS cloud_banned,
+      EXISTS(SELECT 1 FROM bans b WHERE b.user_id = u.id AND b.type = 'account' AND (b.banned_until IS NULL OR b.banned_until > NOW())) AS account_banned,
+      (SELECT banned_until FROM bans b WHERE b.user_id = u.id AND b.type = 'post' AND (b.banned_until IS NULL OR b.banned_until > NOW()) LIMIT 1) AS post_ban_until,
+      (SELECT banned_until FROM bans b WHERE b.user_id = u.id AND b.type = 'cloud' AND (b.banned_until IS NULL OR b.banned_until > NOW()) LIMIT 1) AS cloud_ban_until,
+      (SELECT banned_until FROM bans b WHERE b.user_id = u.id AND b.type = 'account' AND (b.banned_until IS NULL OR b.banned_until > NOW()) LIMIT 1) AS account_ban_until
+    FROM users u
+    WHERE u.id = ?
+  `, [userId]);
+  return rows[0];
 };

@@ -68,7 +68,6 @@ const avatarSrc = computed(() => {
   const url = userStore.userInfo?.avatar_url;
   if (!url) return defaultAvatar;
   const base = `${API_BASE}/${url.replace(/^\//, '')}`;
-  // 带上时间戳，防止浏览器缓存
   const ts = userStore.avatarTimestamp;
   return ts ? `${base}?t=${ts}` : base;
 });

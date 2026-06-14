@@ -50,31 +50,39 @@ const router = useRouter()
 
 const handleLogin = async () => {
   // 清空之前的错误信息
-  errorMsg.value = ''
-
+  errorMsg.value = '';
   if (!username.value.trim() || !password.value.trim()) {
-    errorMsg.value = '用户名和密码不能为空'
-    return
+    errorMsg.value = '用户名和密码不能为空';
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
   try {
-    const res = await login(username.value, password.value)
-    userStore.setToken(res.token)
-    userStore.setUserInfo(res.user)
-    router.push('/')
-  } catch (err) {
-    // 处理后端返回的错误信息
-    if (err.response && err.response.data && err.response.data.error) {
-      errorMsg.value = err.response.data.error
-    } else {
-      errorMsg.value = '登录失败，请检查网络或联系管理员'
+    const res = await login(username.value, password.value);
+    userStore.setToken(res.token);
+    // 立即获取封禁状态
+    await userStore.fetchBans();
+    // 检查账号封禁
+    if (userStore.bans.account) {
+      userStore.logout(); // 清除 token 和用户信息
+      errorMsg.value = '您的账号已被封禁，请联系管理员';
+      loading.value = false;
+      return;
     }
-    console.error('登录失败:', err)
+    userStore.setUserInfo(res.user);
+    router.push('/');
+  } catch (err) {
+    if (err.response && err.response.data && err.response.data.error) {
+      errorMsg.value = err.response.data.error;
+    } else {
+      errorMsg.value = '登录失败，请检查网络或联系管理员';
+    }
+    console.error('登录失败:', err);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
+
 </script>
 
 <style scoped>

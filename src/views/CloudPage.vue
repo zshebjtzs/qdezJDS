@@ -14,13 +14,25 @@
 import { ref, onMounted } from 'vue'
 import PrivateCloud from '@/components/cloud/PrivateCloud.vue'
 import PublicCloud from '@/components/cloud/PublicCloud.vue'
+import { useUserStore } from '@/stores/user'
 import { useCloudStore } from '@/stores/cloud'
+import { useRouter } from 'vue-router'
+
+const userStore = useUserStore()
+const cloudStore = useCloudStore()
+const router = useRouter()
 
 const activeTab = ref('private')
-const cloudStore = useCloudStore()
 
 onMounted(async () => {
-  // 初次加载：同时获取私有和所有公共部门文件
+  // 封禁拦截：如果当前用户被禁止使用网盘，提示并跳转
+  if (userStore.bans.cloud) {
+    alert('您已被禁止使用网盘')
+    router.push('/')
+    return
+  }
+
+  // 初次加载文件（后续升级为分页）
   await Promise.all([
     cloudStore.fetchPrivateFiles(),
     cloudStore.fetchAllPublicFiles()

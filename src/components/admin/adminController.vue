@@ -40,8 +40,12 @@
     <div v-if="userPanel.visible" class="modal-overlay">
       <div class="modal-card">
         <h4>管理用户：{{ userPanel.user.username }}</h4>
+
+        <!-- 禁止发帖 -->
         <div class="perm-section">
           <label><strong>禁止发帖：</strong></label>
+          <span v-if="getBanStatus('post') === 'normal'" class="status normal">正常</span>
+          <span v-else class="status banned">禁用至 {{ formatBanUntil('post') }}</span>
           <select v-model="userPanel.postDuration">
             <option value="">不限制</option>
             <option value="1h">1小时</option>
@@ -51,10 +55,14 @@
             <option value="30d">1个月</option>
           </select>
           <button @click="applyBan('post')">应用</button>
-          <button v-if="userPanel.user._bans?.post" @click="removeBan('post')">解禁</button>
+          <button v-if="getBanStatus('post') !== 'normal'" @click="removeBan('post')">解封</button>
         </div>
+
+        <!-- 禁止网盘 -->
         <div class="perm-section">
           <label><strong>禁止网盘：</strong></label>
+          <span v-if="getBanStatus('cloud') === 'normal'" class="status normal">正常</span>
+          <span v-else class="status banned">禁用至 {{ formatBanUntil('cloud') }}</span>
           <select v-model="userPanel.cloudDuration">
             <option value="">不限制</option>
             <option value="1h">1小时</option>
@@ -64,10 +72,14 @@
             <option value="30d">1个月</option>
           </select>
           <button @click="applyBan('cloud')">应用</button>
-          <button v-if="userPanel.user._bans?.cloud" @click="removeBan('cloud')">解禁</button>
+          <button v-if="getBanStatus('cloud') !== 'normal'" @click="removeBan('cloud')">解封</button>
         </div>
+
+        <!-- 封禁账号 -->
         <div class="perm-section">
           <label><strong>封禁账号：</strong></label>
+          <span v-if="getBanStatus('account') === 'normal'" class="status normal">正常</span>
+          <span v-else class="status banned">禁用至 {{ formatBanUntil('account') }}</span>
           <select v-model="userPanel.accountDuration">
             <option value="">不限制</option>
             <option value="1h">1小时</option>
@@ -77,8 +89,10 @@
             <option value="30d">1个月</option>
           </select>
           <button @click="applyBan('account')">应用</button>
-          <button v-if="userPanel.user._bans?.account" @click="removeBan('account')">解禁</button>
+          <button v-if="getBanStatus('account') !== 'normal'" @click="removeBan('account')">解封</button>
         </div>
+
+        <!-- 授予版主 -->
         <div class="perm-section">
           <label><strong>授予版主：</strong></label>
           <select v-model="userPanel.modCategoryId">
@@ -88,6 +102,7 @@
           <button @click="grantMod">授予</button>
           <button @click="revokeMod">撤销</button>
         </div>
+
         <div class="modal-actions">
           <button class="btn-cancel" @click="userPanel.visible = false">关闭</button>
         </div>
@@ -120,11 +135,10 @@ const userStore = useUserStore()
 // 权限检查：必须是管理员且 uid 匹配
 const adminUid = route.params.adminUid
 if (userStore.userInfo?.role !== 'admin' || userStore.userInfo.uid !== adminUid) {
-  // 可以在这里跳转或显示禁止
-  // 简单起见，在模板里显示无权访问
+  // 可以在 onMounted 中跳转或提示，暂时保留，后续可加拒绝逻辑
 }
 
-// 用户列表
+// 用户列表状态
 const users = ref([])
 const loadingUsers = ref(false)
 const currentPage = ref(1)
@@ -132,6 +146,7 @@ const totalPages = ref(1)
 const searchText = ref('')
 const currentSearch = ref('')
 
+// 加载用户列表（分页）
 const fetchUsers = async (page = 1) => {
   loadingUsers.value = true
   try {
@@ -148,6 +163,7 @@ const fetchUsers = async (page = 1) => {
   }
 }
 
+// 搜索
 const searchUsers = () => {
   currentSearch.value = searchText.value.trim()
   fetchUsers(1)
@@ -168,54 +184,94 @@ const fetchCategories = async () => {
   } catch (err) { console.error(err) }
 }
 
-// 用户弹窗
+// 用户弹窗状态
 const userPanel = reactive({
   visible: false,
-  user: { username: '', _bans: {} },
+  user: { username: '', id: null }, // 实际打开时会填充完整对象
   postDuration: '',
   cloudDuration: '',
   accountDuration: '',
   modCategoryId: null
 })
 
+// 打开用户管理弹窗，初始化时长选择器为当前状态（如果已封禁则预选）
 const openUserPanel = (user) => {
   userPanel.user = user
-  userPanel.postDuration = user._bans?.post ? 'forever' : ''
-  userPanel.cloudDuration = user._bans?.cloud ? 'forever' : ''
-  userPanel.accountDuration = user._bans?.account ? 'forever' : ''
+  // 预选时长：如果已经封禁，可根据当前状态判断（这里简化，默认不选，由管理员重新选择）
+  userPanel.postDuration = ''
+  userPanel.cloudDuration = ''
+  userPanel.accountDuration = ''
   userPanel.modCategoryId = null
   userPanel.visible = true
 }
 
+// 判断某个类型的封禁状态（normal / banned）
+const getBanStatus = (type) => {
+  const user = userPanel.user;
+  if (!user) return 'normal';
+  // 使用布尔字段判断，如 post_banned, cloud_banned, account_banned
+  const bannedField = `${type}_banned`;
+  return user[bannedField] ? 'banned' : 'normal';
+};
+
+// 格式化封禁截止时间
+const formatBanUntil = (type) => {
+  const user = userPanel.user
+  if (!user) return ''
+  const until = user[`${type}_ban_until`]
+  if (!until) return '不限期'
+  return new Date(until).toLocaleString('zh-CN', { hour12: false })
+}
+
+// 应用封禁（先删后插，支持覆盖）
 const applyBan = async (type) => {
   const durationMap = {
     post: userPanel.postDuration,
     cloud: userPanel.cloudDuration,
     account: userPanel.accountDuration
-  }
-  let duration = durationMap[type]
-  if (!duration || duration === '') duration = null // 空字符串转为 null 表示不限期
+  };
+  const duration = durationMap[type];
+  const finalDuration = duration && duration !== '' ? duration : null;
   try {
     await request.post('/admin/ban', {
       userId: userPanel.user.id,
       type,
-      duration
-    })
-    alert('操作成功')
-    userPanel.visible = false
-    fetchUsers(currentPage.value)
-  } catch (err) { alert('操作失败') }
-}
+      duration: finalDuration
+    });
+    // 重新获取该用户封禁详情并更新面板
+    const res = await request.get(`/admin/user/${userPanel.user.id}/bans`);
+    const bansData = res.data || res; // 兼容不同 axios 封装返回格式
+    // 强制触发响应式：重新赋值整个对象
+    userPanel.user = {
+      ...userPanel.user,
+      ...bansData
+    };
+    // 同时更新用户列表中的该用户（保持列表状态同步）
+    const userIndex = users.value.findIndex(u => u.id === userPanel.user.id);
+    if (userIndex !== -1) {
+      users.value[userIndex] = { ...users.value[userIndex], ...bansData };
+    }
+  } catch (err) { alert('操作失败'); }
+};
 
+// 解封
 const removeBan = async (type) => {
   try {
-    await request.post('/admin/unban', { userId: userPanel.user.id, type })
-    alert('解禁成功')
-    userPanel.visible = false
-    fetchUsers(currentPage.value)
-  } catch (err) { alert('操作失败') }
-}
+    await request.post('/admin/unban', { userId: userPanel.user.id, type });
+    const res = await request.get(`/admin/user/${userPanel.user.id}/bans`);
+    const bansData = res.data || res;
+    userPanel.user = {
+      ...userPanel.user,
+      ...bansData
+    };
+    const userIndex = users.value.findIndex(u => u.id === userPanel.user.id);
+    if (userIndex !== -1) {
+      users.value[userIndex] = { ...users.value[userIndex], ...bansData };
+    }
+  } catch (err) { alert('操作失败'); }
+};
 
+// 授予版主
 const grantMod = async () => {
   if (!userPanel.modCategoryId) return
   try {
@@ -225,6 +281,7 @@ const grantMod = async () => {
   } catch (err) { alert('操作失败') }
 }
 
+// 撤销版主
 const revokeMod = async () => {
   if (!userPanel.modCategoryId) return
   try {
@@ -234,34 +291,29 @@ const revokeMod = async () => {
   } catch (err) { alert('操作失败') }
 }
 
-// 板块封禁弹窗
+// 板块封禁弹窗（简化处理，后续可细化）
 const categoryPanel = reactive({
   visible: false,
   category: null,
   isBanned: false
 })
 const openCategoryPanel = (cat) => {
-  // 需要查询该板块是否已全站禁止发帖，暂不实现，直接假设未禁止
-  // 实际上应通过 bans 表查询，这里简化处理，预留
   categoryPanel.category = cat
-  categoryPanel.isBanned = false // 需要后端查询
+  // 查询该板块是否全站禁止发帖（预留）
+  categoryPanel.isBanned = false
   categoryPanel.visible = true
 }
 const banCategory = async () => {
-  // 对板块全站禁止发帖，type=post, categoryId=板块id, 永久
   try {
+    // 全站禁止发帖，userId 可为 null（后端需支持），type='post', categoryId 为当前板块id
     await request.post('/admin/ban', { userId: null, type: 'post', categoryId: categoryPanel.category.id, duration: null })
     alert('全站禁止发帖已生效')
     categoryPanel.visible = false
   } catch (err) { alert('操作失败') }
 }
 const unbanCategory = async () => {
-  // 解除板块禁止发帖
-  try {
-    // 解除需要知道具体记录，这里简化，直接删除对应 bans 记录
-    // 可以增加接口
-    alert('解除功能暂未实现')
-  } catch (err) { alert('操作失败') }
+  // 解除禁止发帖，需要管理员手动删除 bans 记录，暂时简化
+  alert('解除功能暂未实现，请直接删除数据库记录')
 }
 
 onMounted(() => {
@@ -551,5 +603,17 @@ h2 {
   padding: 40px;
   color: #999;
   font-size: 0.95rem;
+}
+
+.status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-right: 8px;
+}
+.status.normal {
+  color: #2c7a5c;
+}
+.status.banned {
+  color: #c0392b;
 }
 </style>

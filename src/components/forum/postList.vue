@@ -5,7 +5,7 @@
     <div class="actions">
       <button @click="changeSort('time')" :class="{ active: sortMode === 'time' }">按时间</button>
       <button @click="changeSort('hot')" :class="{ active: sortMode === 'hot' }">按热度</button>
-      <router-link :to="`/forum/${slug}/new`" class="new-post-link">发新帖</router-link>
+      <router-link v-if="canPost" :to="`/forum/${slug}/new`" class="new-post-link">发新帖</router-link>
     </div>
 
     <div v-if="loading" class="loading-state">加载中...</div>
@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getPostsByCategory, deletePost } from '@/api/forum'
@@ -47,6 +47,7 @@ import { API_BASE } from '@/stores/user'
 const route = useRoute()
 const userStore = useUserStore()
 const slug = route.params.slug
+const canPost = computed(() => !userStore.bans.post);
 
 // 数据
 const posts = ref([])

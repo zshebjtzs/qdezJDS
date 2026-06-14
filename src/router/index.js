@@ -78,22 +78,38 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
   const requiresAuth = to.meta.requiresAuth
   const requiresInternal = to.meta.requiresInternal
 
+  // ---------- 原有 token 异常状态修复 ----------
   if (userStore.token && !userStore.userInfo) {
     userStore.logout()
     if (requiresAuth) return next({ name: 'Login' })
     else return next()
   }
 
+  // ---------- 需要认证时，刷新封禁状态并检查账号封禁 ----------
+  if (requiresAuth && userStore.isLoggedIn) {
+    try {
+      await userStore.fetchBans()
+    } catch (e) {
+      // 网络错误等，不阻塞导航
+    }
+    // 账号被禁止登录
+    if (userStore.bans.account) {
+      userStore.logout()
+      return next({ path: '/', query: { banned: '1' } })
+    }
+  }
+
+  // ---------- 原有认证检查 ----------
   if (requiresAuth && !userStore.isLoggedIn) {
     return next({ name: 'Login', query: { redirect: to.fullPath } })
   }
 
-  // 内部权限检查：允许 internal 或 admin 角色访问
+  // ---------- 内部权限检查 ----------
   if (requiresInternal) {
     const role = userStore.userInfo?.role
     if (role !== 'internal' && role !== 'admin') {
