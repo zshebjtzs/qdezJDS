@@ -12,7 +12,8 @@ import {
   addReply,
   getReplies,
   deleteComment,
-  deleteReply
+  deleteReply,
+  getCategoryBanStatus
 } from '../controllers/forumController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
@@ -38,5 +39,8 @@ router.delete('/:slug/posts/:postId', authMiddleware, deletePost);
 // 评论路由
 router.post('/:slug/posts/:postId/comments', authMiddleware, addComment);
 router.get('/:slug/posts/:postId/comments', authMiddleware, getComments);
+
+// 全站禁止发帖
+router.get('/category/:categoryId/ban-status', getCategoryBanStatus);
 
 export default router;

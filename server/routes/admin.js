@@ -7,7 +7,10 @@ import {
   unbanUser,
   grantModerator,
   revokeModerator,
-  getUserBans
+  getUserBans,
+  getCategoryBanStatus,
+  banCategory,
+  unbanCategory
 } from '../controllers/adminController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
@@ -54,6 +57,24 @@ router.post('/revoke-mod', authMiddleware, (req, res, next) => {
 router.get('/user/:userId/bans', authMiddleware, (req, res, next) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
   getUserBans(req, res, next);
+});
+
+// 板块禁言状态查询
+router.get('/category/:categoryId/ban-status', authMiddleware, (req, res, next) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
+  getCategoryBanStatus(req, res, next);
+});
+
+// 设置板块禁言
+router.post('/category/:categoryId/ban', authMiddleware, (req, res, next) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
+  banCategory(req, res, next);
+});
+
+// 解除板块禁言
+router.delete('/category/:categoryId/ban', authMiddleware, (req, res, next) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
+  unbanCategory(req, res, next);
 });
 
 export default router;

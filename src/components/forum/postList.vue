@@ -46,8 +46,17 @@ import { API_BASE } from '@/stores/user'
 
 const route = useRoute()
 const userStore = useUserStore()
+const isCategoryBanned = ref(false)
 const slug = route.params.slug
-const canPost = computed(() => !userStore.bans.post);
+
+// 发帖权限：用户未被禁言 且 板块未被禁言
+const canPost = computed(() => {
+  // 管理员或版主永远可以发帖
+  if (userStore.userInfo?.role === 'admin') return true
+  if (moderatorIds.value.includes(userStore.userInfo?.id)) return true
+  // 普通用户检查个人禁言和板块禁言
+  return !userStore.bans.post && !isCategoryBanned.value
+})
 
 // 数据
 const posts = ref([])
@@ -70,6 +79,13 @@ const loadPosts = async (page = 1, sort = sortMode.value) => {
     moderatorIds.value = res.moderatorIds
     currentPage.value = res.page
     totalPages.value = res.totalPages
+
+    // 获取板块禁言状态（通过 categoryId，可从帖子返回中获取或单独请求）
+    if (res.data.length > 0) {
+      const catId = res.data[0].categoryId;
+      await userStore.fetchCategoryBan(catId);
+      isCategoryBanned.value = userStore.categoryBans[catId] ?? false;
+    }
   } catch (err) {
     console.error(err)
   } finally {

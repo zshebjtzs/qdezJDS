@@ -10,6 +10,7 @@ export const useUserStore = defineStore('user', {
     userInfo: JSON.parse(localStorage.getItem('userInfo')) || null,
     avatarTimestamp: 0,
     bans: { post: false, cloud: false, account: false }, // 新增封禁状态
+    categoryBans: {},  // { categoryId: true/false }
   }),
   getters: {
     isLoggedIn: (state) => !!state.token && !!state.userInfo,
@@ -53,6 +54,24 @@ export const useUserStore = defineStore('user', {
         this.setBans(res)
       } catch (e) {
         console.error('获取封禁状态失败', e)
+      }
+    },
+    setCategoryBan(categoryId, isBanned) {
+      this.categoryBans = { ...this.categoryBans, [categoryId]: isBanned };
+    },
+    async fetchCategoryBan(categoryId) {
+      try {
+        const { default: request } = await import('@/api/request');
+        const res = await request.get(`/forum/category/${categoryId}/ban-status`);
+        // 假设后端返回 { isBanned: true/false }
+        const isBanned = res.isBanned ?? (res.data?.isBanned ?? false);
+        // 直接修改 state 下的 categoryBans 属性，Vue 3 + Pinia 能侦测到
+        this.categoryBans = {
+          ...this.categoryBans,
+          [categoryId]: isBanned
+        };
+      } catch (e) {
+        console.error('获取板块禁言失败', e);
       }
     },
   },

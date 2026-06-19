@@ -21,7 +21,7 @@
           <input type="checkbox" :checked="post.canBrowse" @change="togglePerm('can_browse', $event)" /> 允许浏览
         </label>
         <label>
-          <input type="checkbox" :checked="post.canReply" @change="togglePerm('can_reply', $event)" /> 允许评论
+          <input type="checkbox" :checked="canReply" @change="togglePerm('can_reply', $event)" /> 允许评论
         </label>
       </template>
     </div>
@@ -131,7 +131,6 @@ const router = useRouter()
 const userStore = useUserStore()
 const slug = route.params.slug
 const postId = route.params.postId
-const canReply = computed(() => post.value?.canReply && !userStore.bans.post);
 
 // 帖子数据
 const post = ref(null)
@@ -140,6 +139,26 @@ const comments = ref([])
 const totalComments = ref(0)
 const commentCurrentPage = ref(1)
 const commentTotalPages = ref(1)
+// 评论及回复权限
+const isCategoryBanned = ref(false)
+
+// 评论/回复权限：帖子允许评论 且 用户未被禁言 且 板块未被禁言
+const canReply = computed(() => {
+  if (!post.value) return false
+  // 仅管理员或当前板块版主可绕过禁言限制
+  if (
+    currentUserRole.value === 'admin' ||
+    (post.value.moderatorIds || []).includes(currentUserId.value)
+  ) {
+    return true
+  }
+  // 普通用户（含作者）：需帖子允许评论、未被个人禁言、板块未被禁言
+  return (
+    post.value.canReply !== false &&
+    !userStore.bans.post &&
+    !isCategoryBanned.value
+  )
+})
 
 // 回复弹窗状态
 const replyDialog = reactive({
@@ -185,10 +204,26 @@ const isRepliesCollapsed = (commentId) => {
   return collapsedReplies[commentId] === true
 }
 
-// 加载帖子详情
+// 加载帖子详情后检查板块禁言
 const loadPost = async () => {
   try {
     post.value = await getPostDetail(slug, postId)
+    if (post.value) {
+      // 获取板块禁言状态
+      await userStore.fetchCategoryBan(post.value.categoryId)
+      // 强制从 store 读取最新值，并使用 ?? false 兜底
+      isCategoryBanned.value = userStore.categoryBans[post.value.categoryId] ?? false
+      
+      // 调试日志：查看实际获取的值
+      /*
+      console.log('板块禁言状态:', {
+        categoryId: post.value.categoryId,
+        isBanned: isCategoryBanned.value,
+        bansPost: userStore.bans.post,
+        canReply: canReply.value
+      })
+      */
+    }
   } catch (err) {
     console.error(err)
   }
@@ -305,6 +340,10 @@ const openReplyDialog = (commentId, replyToUserId, replyToUsername, parentReplyI
 // 提交回复
 const submitReply = async () => {
   if (!replyContent.value.trim()) return
+  if (!canReply.value) {
+    alert('您已被禁言，无法评论')
+    return
+  }
   try {
     await addReply(replyDialog.commentId, {
       content: replyContent.value,
@@ -324,6 +363,10 @@ const submitReply = async () => {
 // 提交新评论
 const submitComment = async () => {
   if (!newComment.value.trim()) return
+  if (!canReply.value) {
+    alert('您已被禁言，无法评论')
+    return
+  }
   try {
     await addComment(slug, postId, newComment.value)
     newComment.value = ''
@@ -422,10 +465,10 @@ const handleCommentPageChange = (page) => {
   loadComments(page)
 }
 
-onMounted(() => {
-  loadPost().then(() => {
-    if (post.value) loadComments()
-  })
+onMounted(async () => {
+  await userStore.fetchBans();  // 确保最新
+  await loadPost();
+  if (post.value) loadComments();
 })
 </script>
 

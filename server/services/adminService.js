@@ -76,3 +76,38 @@ export const getUserBanDetails = async (userId) => {
   `, [userId]);
   return rows[0];
 };
+
+// 获取板块禁言状态
+export const getCategoryBanStatus = async (categoryId) => {
+  const [rows] = await pool.query(
+    `SELECT 1 FROM bans 
+     WHERE category_id = ? AND type = 'post' AND user_id IS NULL 
+     AND (banned_until IS NULL OR banned_until > NOW()) 
+     LIMIT 1`,
+    [categoryId]
+  );
+  return rows.length > 0; // true 表示已被禁言
+};
+
+// 设置板块禁言（user_id 为 NULL，表示全板块）
+export const addCategoryBan = async (categoryId, createdBy) => {
+  // 先清理旧记录
+  await pool.query(
+    `DELETE FROM bans WHERE category_id = ? AND type = 'post' AND user_id IS NULL`,
+    [categoryId]
+  );
+  // 插入新记录，永久禁言（banned_until 为 NULL）
+  await pool.query(
+    `INSERT INTO bans (user_id, category_id, type, banned_until, created_by) 
+     VALUES (NULL, ?, 'post', NULL, ?)`,
+    [categoryId, createdBy]
+  );
+};
+
+// 解除板块禁言
+export const removeCategoryBan = async (categoryId) => {
+  await pool.query(
+    `DELETE FROM bans WHERE category_id = ? AND type = 'post' AND user_id IS NULL`,
+    [categoryId]
+  );
+};

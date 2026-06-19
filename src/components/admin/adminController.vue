@@ -297,24 +297,30 @@ const categoryPanel = reactive({
   category: null,
   isBanned: false
 })
-const openCategoryPanel = (cat) => {
-  categoryPanel.category = cat
-  // 查询该板块是否全站禁止发帖（预留）
-  categoryPanel.isBanned = false
-  categoryPanel.visible = true
-}
+const openCategoryPanel = async (cat) => {
+  categoryPanel.category = cat;
+  try {
+    const res = await request.get(`/admin/category/${cat.id}/ban-status`);
+    categoryPanel.isBanned = res.isBanned ?? (res.data?.isBanned ?? false);
+  } catch (err) {
+    categoryPanel.isBanned = false;
+  }
+  categoryPanel.visible = true;
+};
 const banCategory = async () => {
   try {
-    // 全站禁止发帖，userId 可为 null（后端需支持），type='post', categoryId 为当前板块id
-    await request.post('/admin/ban', { userId: null, type: 'post', categoryId: categoryPanel.category.id, duration: null })
-    alert('全站禁止发帖已生效')
-    categoryPanel.visible = false
-  } catch (err) { alert('操作失败') }
-}
+    await request.post(`/admin/category/${categoryPanel.category.id}/ban`);
+    categoryPanel.isBanned = true;
+    alert('全站禁止发帖已生效');
+  } catch (err) { alert('操作失败'); }
+};
 const unbanCategory = async () => {
-  // 解除禁止发帖，需要管理员手动删除 bans 记录，暂时简化
-  alert('解除功能暂未实现，请直接删除数据库记录')
-}
+  try {
+    await request.delete(`/admin/category/${categoryPanel.category.id}/ban`);
+    categoryPanel.isBanned = false;
+    alert('禁止发帖已解除');
+  } catch (err) { alert('操作失败'); }
+};
 
 onMounted(() => {
   fetchUsers()

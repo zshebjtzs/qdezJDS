@@ -81,3 +81,36 @@ export const getUserBans = async (req, res, next) => {
     res.json(details);
   } catch (err) { next(err); }
 };
+
+// 获取板块禁言状态
+export const getCategoryBanStatus = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    const isBanned = await adminService.getCategoryBanStatus(categoryId);
+    res.json({ isBanned });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 设置板块禁言
+export const banCategory = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    await adminService.addCategoryBan(categoryId, req.user.id);
+    res.json({ message: '板块禁言已生效' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 解除板块禁言
+export const unbanCategory = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    await adminService.removeCategoryBan(categoryId);
+    res.json({ message: '板块禁言已解除' });
+  } catch (err) {
+    next(err);
+  }
+};

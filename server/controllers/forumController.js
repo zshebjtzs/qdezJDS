@@ -351,3 +351,16 @@ export const deleteReply = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getCategoryBanStatus = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    const [rows] = await pool.query(
+      `SELECT 1 FROM bans 
+       WHERE category_id = ? AND type = 'post' AND user_id IS NULL 
+       AND (banned_until IS NULL OR banned_until > NOW()) LIMIT 1`,
+      [categoryId]
+    );
+    res.json({ isBanned: rows.length > 0 });
+  } catch (err) { next(err); }
+};
