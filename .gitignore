@@ -12,9 +12,6 @@ dist/
 .env.production
 /server/.env
 
-# 数据库初始化脚本（如含示例数据则忽略，若仅建表可考虑公开）
-server/db/init.sql
-
 # 上传文件目录
 /server/uploads/
 
@@ -22,9 +19,6 @@ server/db/init.sql
 .DS_Store
 Thumbs.db
 *.log
-
-# 测试 HTTP 请求文件
-test-api.http
 
 # 编辑器和 IDE 临时文件
 *.swp

@@ -51,12 +51,13 @@
 
 ## 功能特性
 
-| 模块       | 子功能                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------ |
-| **用户系统** | 注册（管理员创建）、登录、JWT 令牌签发、角色权限（`internal` / `external` / `admin`）        |
-| **论坛**     | 内部论坛（仅 `internal` / `admin` 可见）、公开论坛（所有访客可浏览，登录后可发帖）、管理员删帖 |
-| **网盘**     | 私有网盘（个人专属）、公共网盘（按 `art` / `mech` / `soft` 部门分区，本部门上传，其他部门可下载） |
-| **管理员**   | 全站权限：上传至任意部门、删除任意文件、管理所有帖子                                         |
+| 模块 | 子功能 |
+| --- | --- |
+| **用户系统** | 注册（管理员通过 API 创建）、登录、JWT 令牌鉴权；自定义头像/背景图（裁剪上传）；个人信息（联系方式、简介、主题色）；修改密码（强度校验）；用户名 3 天冷却修改，曾用名显示；管理员紫色、版主红色名称标识；最近活跃时间自动记录 |
+| **论坛** | 多板块（内部/公开分区，部门事务板块）；帖子按时间和热度排序（后端分页）；Markdown + LaTeX 编辑与渲染（Vditor + KaTeX）；树形评论/回复（二级限制，@提及，嵌套缩进）；评论/回复分页加载；帖子权限控制（允许浏览/评论）；管理员/版主管理（删除帖子、修改权限、板块禁言）；用户禁言/解禁（全站或板块级）；帖子浏览量去重 |
+| **网盘** | 私有/公共网盘；部门共享空间；文件上传、下载、删除；中文文件名处理；文件搜索（纯前端）；分页加载 |
+| **管理员控制台** | 用户管理（查看、搜索、封禁/解封、授予/撤销版主）；板块禁言控制；封禁支持有效期限（1h/1d/3d/7d/30d 或不限期） |
+| **通用** | 响应式布局；分页组件；全局 CSS 设计令牌；安全防护（Helmet、参数化查询、DOMPurify、XSS 防护）；用户列表；使用条款/隐私政策；Token 过期自动退出与封禁拦截 |
 
 ---
 
@@ -92,30 +93,43 @@
 
 ```
 qdezJDS/
-├── index.html                 # Vue 入口 HTML
-├── package.json               # 前端依赖
-├── vite.config.js             # Vite 配置（含 API 代理）
-├── .env.development           # 开发环境变量
-├── .env.production            # 生产环境变量
-├── src/
-│   ├── api/                   # Axios 请求封装（auth, forum, cloud）
-│   ├── components/            # 可复用组件（布局、网盘子组件等）
-│   ├── views/                 # 页面级组件（首页、登录、论坛、网盘等）
-│   ├── router/                # 路由配置 + 导航守卫
-│   ├── stores/                # Pinia 状态管理（user, cloud）
-│   ├── utils/                 # 工具函数（下载等）
-│   └── main.js                # 应用入口
-├── server/                    # 后端源码
-│   ├── app.js                 # 应用入口，Express 初始化
-│   ├── config/                # 配置文件（数据库连接、路径等）
-│   ├── controllers/           # 控制器（auth, forum, cloud）
-│   ├── services/              # 服务层（数据库操作封装）
-│   ├── middlewares/           # 中间件（认证、错误处理、上传）
-│   ├── routes/                # 路由定义
-│   ├── utils/                 # 工具函数（JWT、bcrypt、编码）
-│   ├── db/                    # 数据库初始化 SQL 脚本
-│   └── uploads/               # 文件存储目录（自动创建）
-└── .gitignore
+├── index.html # Vue 应用入口 HTML，定义挂载点 #app
+├── package.json # 前端 npm 依赖与脚本
+├── vite.config.js # Vite 构建配置（路径别名、API 代理）
+├── .env.development # 开发环境变量
+├── .env.production # 生产环境变量
+├── .gitignore # Git 忽略规则
+├── src/ # 前端源码目录
+│ ├── api/ # Axios 请求封装（auth、forum、cloud、user 等）
+│ ├── assets/ # 静态资源（图片、默认头像、法律文档等）
+│ ├── components/ # 可复用组件
+│ │ ├── admin/ # 管理员控制面板
+│ │ ├── cloud/ # 网盘子组件（私有/公共）
+│ │ ├── common/ # 通用组件（分页器等）
+│ │ ├── forum/ # 论坛核心组件（帖子列表、详情、编辑）
+│ │ ├── layout/ # 布局组件（导航栏、页脚、用户信息页）
+│ │ ├── legal/ # 法律文本展示组件
+│ │ └── publicHome/ # 公共主页子组件（关于、活动）
+│ ├── markdown/ # Markdown 编辑器与安全渲染（Vditor、KaTeX）
+│ ├── router/ # Vue Router 配置与导航守卫
+│ ├── stores/ # Pinia 状态管理（用户、网盘等）
+│ ├── styles/ # 全局样式（CSS 变量、组件基础类、网盘公共样式）
+│ ├── utils/ # 工具函数（排序、搜索、密码校验等）
+│ ├── views/ # 页面级组件（首页、登录、论坛、网盘、404）
+│ ├── App.vue # 根组件，动态布局
+│ └── main.js # 应用入口，注册 Pinia、Router
+├── server/ # 后端源码目录
+│ ├── app.js # Express 应用入口（中间件、路由挂载、启动监听）
+│ ├── config/ # 配置文件（数据库连接池、路径工具）
+│ ├── controllers/ # 控制器层（auth、forum、cloud、user、admin 等）
+│ ├── services/ # 服务层（数据库查询封装）
+│ ├── middlewares/ # 中间件（JWT 认证、错误处理、文件上传、活跃时间更新）
+│ ├── routes/ # 路由定义（auth、forum、cloud、user、admin）
+│ ├── utils/ # 工具函数（JWT、bcrypt、分页、编码转换等）
+│ ├── db/ # 数据库初始化脚本（示例 SQL）
+│ ├── uploads/ # 文件存储目录（头像、背景、网盘文件）
+│ └── .env # 后端环境变量（不提交）
+└── (其他配置文件等)
 ```
 
 ---
@@ -151,11 +165,13 @@ qdezJDS/
 3. **配置数据库**
 
    - 新建 MySQL 数据库，例如 `qdez_JDS_db`，字符集选择 `utf8mb4`。
-   - 导入表结构：
+   - 导入表结构（含默认板块数据）：
 
      ```bash
-     mysql -u root -p qdez_JDS_db < server/db/init_mysql.sql
+     mysql -u root -p qdez_JDS_db < server/db/init.sql
      ```
+
+     > 该脚本会创建所有业务表（用户、帖子、评论、回复、封禁记录等），并插入 10 个默认论坛板块。
 
    - 在 `server/` 目录下创建 `.env` 文件（可复制 `.env.example` 并修改）：
 
@@ -169,6 +185,8 @@ qdezJDS/
      ```
 
      > ⚠️ 请务必将 `JWT_SECRET` 和 `DB_PASSWORD` 修改为强密码。
+
+
 
 ### 启动开发服务
 
@@ -224,128 +242,67 @@ Content-Type: application/json
 
 ## API 文档
 
-### 基础地址
-
-- 开发环境：`http://localhost:3001/api`
-
 ### 认证模块
 
-| 方法 | 路径                  | 说明                                 | 权限   |
-| ---- | --------------------- | ------------------------------------ | ------ |
-| POST | `/api/auth/register`  | 注册新用户                           | 管理员 |
-| POST | `/api/auth/login`     | 用户登录，返回 JWT 令牌与用户信息     | 公开   |
+| 方法 | 路径 | 说明 | 权限 |
+| --- | --- | --- | --- |
+| POST | `/api/auth/register` | 注册新用户 | 公开（建议仅管理员使用） |
+| POST | `/api/auth/login` | 登录，返回 JWT 与用户信息 | 公开 |
 
-**登录请求示例：**
+### 用户模块
 
-```json
-{
-  "username": "testuser1",
-  "password": "123456"
-}
-```
-
-**登录响应示例：**
-
-```json
-{
-  "token": "eyJhbGciOiJIUzI1...",
-  "user": {
-    "id": 1,
-    "username": "testuser1",
-    "department": "art",
-    "role": "internal"
-  }
-}
-```
-
-后续请求需在 Header 中携带：`Authorization: Bearer <token>`
+| 方法 | 路径 | 说明 | 权限 |
+| --- | --- | --- | --- |
+| GET | `/api/user/:uid` | 查看他人公开信息 | 登录 |
+| GET | `/api/user/me/profile` | 获取自己完整信息 | 登录 |
+| PATCH | `/api/user/me/username` | 修改用户名（3天冷却） | 登录 |
+| PATCH | `/api/user/me/password` | 修改密码（需旧密码） | 登录 |
+| PATCH | `/api/user/me/profile` | 修改个人资料 | 登录 |
+| POST | `/api/user/me/avatar` | 上传头像 | 登录 |
+| POST | `/api/user/me/cover` | 上传背景图 | 登录 |
+| GET | `/api/user/me/bans` | 获取自己的封禁状态 | 登录 |
 
 ### 论坛模块
 
-| 方法   | 路径                  | 说明                                         | 权限                |
-| ------ | --------------------- | -------------------------------------------- | ------------------- |
-| GET    | `/api/forum/posts`    | 获取所有帖子（含公开和当前用户可见的内部帖） | 公开（部分内容受限）|
-| POST   | `/api/forum/posts`    | 发布新帖子                                   | 登录用户            |
-| DELETE | `/api/forum/posts/:id`| 删除帖子                                     | 管理员或帖主        |
+板块、帖子、评论、回复的接口较多，建议直接查阅 `test-api.http` 或运行时查看 Express 路由。  
+主要端点包括：
 
-**发帖请求体：**
+- 板块列表：`GET /api/forum/categories`
+- 帖子列表（分页）：`GET /api/forum/:slug/posts`
+- 帖子详情：`GET /api/forum/:slug/posts/:postId`
+- 发帖：`POST /api/forum/:slug/posts`
+- 评论列表（分页）：`GET /api/forum/:slug/posts/:postId/comments`
+- 发表评论：`POST /api/forum/:slug/posts/:postId/comments`
+- 回复列表（分页）：`GET /api/forum/comments/:commentId/replies`
+- 发表回复：`POST /api/forum/comments/:commentId/replies`
 
-```json
-{
-  "title": "帖子标题",
-  "content": "Markdown 内容",
-  "forumType": "public"
-}
-```
+### 管理员模块
 
-`forumType` 可选值：`public`（公开论坛）或 `internal`（内部论坛，仅成员可见）。
-
-### 网盘模块
-
-**私有网盘**
-
-| 方法 | 路径                  | 说明                         | 权限     |
-| ---- | --------------------- | ---------------------------- | -------- |
-| GET  | `/api/cloud/private`  | 获取当前用户的私有文件列表   | 登录用户 |
-| POST | `/api/cloud/private`  | 上传私有文件（`type=private`）| 登录用户 |
-| DELETE | `/api/cloud/private/:filename` | 删除私有文件 | 文件所有者 |
-
-**公共网盘**
-
-| 方法 | 路径                             | 说明                                           | 权限               |
-| ---- | -------------------------------- | ---------------------------------------------- | ------------------ |
-| GET  | `/api/cloud/public/:department`  | 获取指定部门的公共文件列表                     | 内部成员           |
-| POST | `/api/cloud/public`              | 上传公共文件（需提供 `type=public, department`）| 本部门或管理员     |
-| DELETE | `/api/cloud/public/:department/:filename` | 删除公共文件                         | 本部门上传者或管理员 |
-
-**上传文件请求格式：** `multipart/form-data`，字段包括：
-
-- `file`：文件本体
-- `type`：`private` 或 `public`
-- `department`（公共文件必填）：`art`、`mech` 或 `soft`
-
-> 所有文件上传大小限制为 50MB（可在 `server/middlewares/upload.js` 调整）。
+| 方法 | 路径 | 说明 | 权限 |
+| --- | --- | --- | --- |
+| GET | `/api/admin/users` | 用户列表（搜索、分页） | 管理员 |
+| GET | `/api/admin/categories` | 板块列表 | 管理员 |
+| POST | `/api/admin/ban` | 封禁用户/板块 | 管理员 |
+| POST | `/api/admin/unban` | 解封用户 | 管理员 |
+| POST | `/api/admin/grant-mod` | 授予版主 | 管理员 |
+| POST | `/api/admin/revoke-mod` | 撤销版主 | 管理员 |
 
 ---
 
 ## 数据库设计
 
-### 用户表 `users`
+核心业务表已全面升级，主要包含：
 
-| 字段        | 类型          | 说明                             |
-| ----------- | ------------- | -------------------------------- |
-| id          | INT (PK, AI)  | 用户 ID                          |
-| username    | VARCHAR(50)   | 用户名（唯一）                   |
-| password    | VARCHAR(255)  | bcrypt 加密后的密码              |
-| department  | ENUM('art','mech','soft') | 所属部门（内部成员必填） |
-| role        | ENUM('internal','external','admin') | 用户角色               |
-| created_at  | TIMESTAMP     | 注册时间                         |
+- **users**：新增 UID、头像、背景图、个人简介、联系方式、主题色、密码修改冷却、活跃时间等字段。
+- **posts**：新增板块关联、浏览数、可回复/可浏览权限控制字段。
+- **comments**：帖子的一级评论。
+- **replies**：评论的回复，支持多级嵌套（通过 parent_reply_id）。
+- **bans**：封禁记录，支持发帖、网盘、账号三种类型及有效期限。
+- **moderators**：版主指派记录。
+- **post_views**：浏览记录，用于去重计数。
+- **files**：网盘文件元信息。
 
-### 帖子表 `posts`
-
-| 字段       | 类型          | 说明                         |
-| ---------- | ------------- | ---------------------------- |
-| id         | INT (PK, AI)  | 帖子 ID                      |
-| title      | VARCHAR(200)  | 标题                         |
-| content    | TEXT          | Markdown 内容                |
-| forum_type | ENUM('public','internal') | 论坛类型     |
-| author_id  | INT (FK)      | 作者用户 ID                  |
-| created_at | TIMESTAMP     | 发布时间                     |
-
-### 文件记录表 `files`
-
-| 字段        | 类型          | 说明                                 |
-| ----------- | ------------- | ------------------------------------ |
-| id          | INT (PK, AI)  | 文件 ID                              |
-| filename    | VARCHAR(255)  | 存储文件名（UUID 生成）              |
-| originalname| VARCHAR(255)  | 原始文件名                           |
-| type        | ENUM('private','public') | 文件类型                 |
-| department  | ENUM('art','mech','soft') | 所属部门（公共文件）     |
-| uploader_id | INT (FK)      | 上传者 ID                            |
-| size        | BIGINT        | 文件大小（字节）                     |
-| created_at  | TIMESTAMP     | 上传时间                             |
-
-完整建表语句请查看 `server/db/init_mysql.sql`。
+完整的建表语句请参考 `server/db/init_mysql.sql`（示例文件，实际部署时需根据项目最新迁移脚本调整）。
 
 ---
 
