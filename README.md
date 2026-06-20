@@ -158,7 +158,7 @@ qdezJDS/
    npm install
 
    # 后端
-   cd server
+   cd ./server
    npm install
    ```
 
@@ -302,7 +302,7 @@ Content-Type: application/json
 - **post_views**：浏览记录，用于去重计数。
 - **files**：网盘文件元信息。
 
-完整的建表语句请参考 `server/db/init_mysql.sql`（示例文件，实际部署时需根据项目最新迁移脚本调整）。
+完整的建表语句请参考 `server/db/init.sql` 。
 
 ---
 

@@ -158,7 +158,7 @@ qdezJDS/
    npm install
 
    # Backend
-   cd server
+   cd ./server
    npm install
    ```
 
@@ -299,7 +299,7 @@ Core business tables have been significantly upgraded, including:
 - **post_views**: View records for deduplicated counting.
 - **files**: Cloud drive file metadata.
 
-Full SQL schema is available at `server/db/init.sql` (sample; adjust to the latest migration scripts when deploying).
+Full SQL schema is available at `server/db/init.sql` .
 
 ---
 
