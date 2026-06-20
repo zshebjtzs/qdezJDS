@@ -66,11 +66,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* =============================================
+   HomePage 样式（应用全局设计令牌）
+   保留原有布局，替换为 CSS 变量以统一视觉
+   ============================================= */
+
 /* 主页容器 —— 沿用原有限制宽度居中 */
 .home-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 var(--space-md);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   position: relative;
 }
@@ -87,7 +92,7 @@ onMounted(() => {
 .logo {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #42b983;
+  color: var(--color-primary);
   letter-spacing: -0.3px;
 }
 
@@ -98,14 +103,14 @@ onMounted(() => {
 
 .nav-links a {
   text-decoration: none;
-  color: #2c3e50;
+  color: var(--color-text);
   font-weight: 500;
-  transition: color 0.2s;
+  transition: color var(--transition-fast);
   font-size: 1rem;
 }
 
 .nav-links a:hover {
-  color: #42b983;
+  color: var(--color-primary);
 }
 
 /* 增强型 Hero 区域 —— 视觉深度优化 */
@@ -113,13 +118,13 @@ onMounted(() => {
   text-align: center;
   padding: 80px 20px 60px;
   margin: 40px 0 20px;
-  background: linear-gradient(145deg, #fafdfb 0%, #f4faf7 100%);
+  background: linear-gradient(145deg, var(--color-primary-bg) 0%, var(--color-primary-light) 100%);
   border-radius: 32px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 15px 30px -10px rgba(66, 185, 131, 0.1);
   border: 1px solid rgba(66, 185, 131, 0.15);
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow var(--transition-fast);
 }
 
 .hero:hover {
@@ -145,7 +150,7 @@ onMounted(() => {
 
 .hero-badge {
   display: inline-block;
-  padding: 6px 16px;
+  padding: 6px var(--space-md);
   background: rgba(66, 185, 131, 0.12);
   color: #2c7a5c;
   border-radius: 40px;
@@ -171,7 +176,7 @@ onMounted(() => {
 
 .hero p {
   font-size: 1.3rem;
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   max-width: 650px;
   margin: 0 auto 30px;
   font-weight: 400;
@@ -187,36 +192,36 @@ onMounted(() => {
 
 .hero-btn {
   display: inline-block;
-  padding: 14px 32px;
+  padding: 14px var(--space-xl);
   border-radius: 60px;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: var(--transition-smooth);
   font-size: 1rem;
   border: 1px solid transparent;
 }
 
 .hero-btn.primary {
-  background: #42b983;
+  background: var(--color-primary);
   color: white;
-  box-shadow: 0 6px 14px rgba(66, 185, 131, 0.3);
+  box-shadow: var(--shadow-green);
 }
 
 .hero-btn.primary:hover {
-  background: #359b6e;
+  background: var(--color-primary-hover);
   transform: translateY(-3px);
   box-shadow: 0 12px 20px -8px rgba(66, 185, 131, 0.5);
 }
 
 .hero-btn.secondary {
   background: transparent;
-  color: #2c3e50;
+  color: var(--color-text);
   border: 1.5px solid #cbdad3;
 }
 
 .hero-btn.secondary:hover {
-  border-color: #42b983;
-  color: #42b983;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
   transform: translateY(-2px);
   background: rgba(66, 185, 131, 0.04);
 }
@@ -229,7 +234,7 @@ onMounted(() => {
   margin-top: 50px;
   cursor: pointer;
   opacity: 0.65;
-  transition: opacity 0.3s;
+  transition: opacity var(--transition-fast);
   position: relative;
   z-index: 5;
 }
@@ -243,15 +248,15 @@ onMounted(() => {
   color: #5b7a6e;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-sm);
   font-weight: 500;
 }
 
 .scroll-arrow {
   width: 24px;
   height: 24px;
-  border-left: 2px solid #42b983;
-  border-bottom: 2px solid #42b983;
+  border-left: 2px solid var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
   transform: rotate(-45deg);
   animation: bounce 2s infinite;
 }
@@ -268,48 +273,19 @@ onMounted(() => {
   }
 }
 
-/* 响应式优化 */
-@media (max-width: 700px) {
-  .hero {
-    padding: 60px 16px 40px;
-    border-radius: 24px;
-  }
-
-  .hero h1 {
-    font-size: 2.3rem;
-  }
-
-  .hero p {
-    font-size: 1.1rem;
-  }
-
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .hero-btn {
-    width: 100%;
-    max-width: 260px;
-    text-align: center;
-  }
-
-  .nav-links {
-    gap: 18px;
-  }
-}
+/* Token 过期提示弹窗 */
 .expired-toast {
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  border-radius: 8px;
-  padding: 12px 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-lg);
+  box-shadow: var(--shadow-sm);
   animation: slideDown 0.4s ease-out;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 0.95rem;
@@ -318,7 +294,7 @@ onMounted(() => {
 .toast-content {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .toast-icon {
@@ -333,6 +309,32 @@ onMounted(() => {
   to {
     transform: translate(-50%, 0);
     opacity: 1;
+  }
+}
+
+/* 响应式优化 */
+@media (max-width: 700px) {
+  .hero {
+    padding: 60px 16px 40px;
+    border-radius: var(--radius-xl);
+  }
+  .hero h1 {
+    font-size: 2.3rem;
+  }
+  .hero p {
+    font-size: 1.1rem;
+  }
+  .hero-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-btn {
+    width: 100%;
+    max-width: 260px;
+    text-align: center;
+  }
+  .nav-links {
+    gap: 18px;
   }
 }
 </style>

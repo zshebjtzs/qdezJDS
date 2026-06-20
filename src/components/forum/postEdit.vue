@@ -143,116 +143,123 @@ const submitPost = async () => {
 </script>
 
 <style scoped>
+/* =============================================
+   postEdit 发帖页样式（应用全局设计令牌）
+   统一卡片、输入框、按钮、速查面板、外部链接
+   ============================================= */
+
 .post-edit {
   max-width: 860px;
   margin: 30px auto;
-  padding: 28px;
+  padding: var(--space-xl);
   background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
-  border: 1px solid #eef3f0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 h2 {
   font-size: 1.8rem;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-sm);
   font-weight: 700;
-  border-left: 5px solid #42b983;
+  border-left: 5px solid var(--color-primary);
   padding-left: 14px;
 }
 
 .board-hint {
   font-size: 0.9rem;
-  color: #888;
-  margin-bottom: 24px;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-lg);
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 
 .title-input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #d9e5df;
-  border-radius: 10px;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-sm);
   font-size: 1rem;
   outline: none;
-  transition: 0.2s;
+  transition: var(--transition-fast);
 }
 
 .title-input:focus {
-  border-color: #42b983;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
 }
 
 .form-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-sm);
   align-items: center;
   margin-top: 10px;
 }
 
 .submit-btn {
   padding: 10px 28px;
-  background: linear-gradient(135deg, #42b983, #2ecc71);
+  background: var(--color-primary-gradient);
   color: white;
   border: none;
-  border-radius: 30px;
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: 0.2s;
+  box-shadow: var(--shadow-green);
+  transition: var(--transition-fast);
 }
 
 .submit-btn:hover {
-  background: linear-gradient(135deg, #359b6e, #27ae60);
-  box-shadow: 0 4px 12px rgba(66, 185, 131, 0.3);
+  filter: brightness(1.05);
+  transform: translateY(-1px);
 }
 
 .cancel-btn {
   padding: 10px 28px;
-  border-radius: 30px;
-  border: 1px solid #d0ddd5;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-dark);
   background: #fff;
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   font-weight: 500;
   text-decoration: none;
   display: inline-block;
+  transition: var(--transition-fast);
 }
 
 .cancel-btn:hover {
-  border-color: #42b983;
-  color: #42b983;
-  background: #f8fdfa;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .error-msg {
-  color: #c0392b;
-  margin-top: 12px;
+  color: var(--color-danger);
+  margin-top: var(--space-sm);
   font-size: 0.9rem;
 }
 
 /* Markdown 语法速查面板 */
 .markdown-help {
   margin-top: 18px;
-  background: #f9fdfb;
+  background: var(--color-primary-bg);
   border: 1px solid rgba(66, 185, 131, 0.2);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  transition: all 0.2s;
+  transition: var(--transition-fast);
 }
 
 .markdown-help[open] {
   background: #ffffff;
   border-color: rgba(66, 185, 131, 0.35);
-  box-shadow: 0 4px 12px rgba(66, 185, 131, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .markdown-help summary {
-  padding: 12px 18px;
+  padding: var(--space-sm) 18px;
   font-weight: 600;
   font-size: 0.95rem;
   color: #2c7a5c;
@@ -271,7 +278,7 @@ h2 {
 .markdown-help summary::before {
   content: '▶';
   font-size: 0.7rem;
-  transition: transform 0.2s;
+  transition: transform var(--transition-fast);
   display: inline-block;
   width: 14px;
   text-align: center;
@@ -282,7 +289,7 @@ h2 {
 }
 
 .help-content {
-  padding: 0 18px 16px;
+  padding: 0 18px var(--space-md);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -292,9 +299,9 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f6f3;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .help-item:last-child {
@@ -304,18 +311,18 @@ h2 {
 .help-desc {
   flex: 1;
   font-size: 0.9rem;
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
 .help-desc strong {
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 .help-desc code {
   background: #edf5f1;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.85rem;
   color: #2c7a5c;
 }
@@ -331,23 +338,24 @@ h2 {
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 0.85rem;
-  color: #1e2b39;
+  color: var(--color-text);
   white-space: nowrap;
 }
 
 .help-tip {
   font-size: 0.85rem;
-  color: #6f8a7c;
+  color: var(--color-text-secondary);
   margin: 6px 0 0;
   text-align: center;
 }
 
+/* 内嵌语言下拉帮助 */
 .lang-help {
   margin-top: 6px;
-  background: #fafdfb;
+  background: var(--color-primary-bg);
   border: 1px solid #dfece4;
-  border-radius: 8px;
-  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) 10px;
 }
 
 .lang-help summary {
@@ -359,7 +367,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 0;
+  padding: var(--space-xs) 0;
 }
 
 .lang-help summary::-webkit-details-marker {
@@ -369,7 +377,7 @@ h2 {
 .lang-help summary::before {
   content: '▸';
   font-size: 0.8rem;
-  transition: transform 0.2s;
+  transition: transform var(--transition-fast);
 }
 
 .lang-help[open] summary::before {
@@ -379,9 +387,9 @@ h2 {
 .lang-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 4px 16px;
+  gap: 4px var(--space-md);
   font-size: 0.85rem;
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   margin-top: 6px;
 }
 
@@ -395,31 +403,32 @@ h2 {
 
 .lang-tip {
   font-size: 0.82rem;
-  color: #c0392b;
-  margin-top: 8px;
+  color: var(--color-danger);
+  margin-top: var(--space-sm);
 }
+
 /* 外部手册链接区域 */
 .external-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
 }
 
 .external-links a {
   font-size: 0.9rem;
   color: #2c7a5c;
-  background: #f4faf7;
+  background: var(--color-primary-light);
   border: 1px solid rgba(66, 185, 131, 0.2);
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   padding: 4px 14px;
   text-decoration: none;
-  transition: 0.2s;
+  transition: var(--transition-fast);
 }
 
 .external-links a:hover {
-  background: #42b983;
+  background: var(--color-primary);
   color: #fff;
-  border-color: #42b983;
+  border-color: var(--color-primary);
 }
 </style>

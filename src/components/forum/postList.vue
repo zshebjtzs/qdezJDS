@@ -150,102 +150,105 @@ onMounted(() => loadPosts())
 </script>
 
 <style scoped>
-
-.avatar-small { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+/* =============================================
+   postList 帖子列表样式（应用全局设计令牌）
+   统一卡片、按钮、标签、分页风格
+   ============================================= */
 
 .post-list {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--space-lg) var(--space-md);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 h2 {
   font-size: 1.8rem;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
   font-weight: 600;
-  border-left: 5px solid #42b983;
+  border-left: 5px solid var(--color-primary);
   padding-left: 14px;
-  color: #1e2b39;
+  color: var(--color-text);
 }
 
-/* 操作栏 */
+/* ---- 操作栏（排序 + 发帖）---- */
 .actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
   flex-wrap: wrap;
 }
 
 .actions button,
 .new-post-link {
-  padding: 8px 18px;
-  border-radius: 24px;
-  border: 1px solid #d0ddd5;
+  padding: var(--space-sm) 18px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-dark);
   background: #fff;
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--color-text);
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
-  transition: all 0.2s;
+  transition: var(--transition-fast);
 }
 
 .actions button:hover,
 .new-post-link:hover {
-  border-color: #42b983;
-  color: #42b983;
-  background: #f8fdfa;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .actions button.active {
-  background: #42b983;
+  background: var(--color-primary-gradient);
   color: #fff;
-  border-color: #42b983;
+  border-color: transparent;
 }
 
 .new-post-link {
   margin-left: auto;
-  background: linear-gradient(135deg, #42b983, #2ecc71);
-  color: white;
+  background: var(--color-primary-gradient);
+  color: #fff;
   border: none;
-  box-shadow: 0 4px 10px rgba(66, 185, 131, 0.25);
+  box-shadow: var(--shadow-green);
 }
 
 .new-post-link:hover {
-  background: linear-gradient(135deg, #359b6e, #27ae60);
-  box-shadow: 0 6px 14px rgba(66, 185, 131, 0.35);
+  filter: brightness(1.05);
+  transform: translateY(-1px);
 }
 
-/* 帖子卡片 */
+/* ---- 帖子卡片 ---- */
 .post-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 14px 18px;
   background: #fff;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   margin-bottom: 10px;
-  border: 1px solid #eef3f0;
-  transition: box-shadow 0.2s;
+  border: 1px solid var(--color-border);
+  transition: var(--transition-smooth);
 }
 
 .post-card:hover {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .post-title {
   font-size: 1.05rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--color-text);
   text-decoration: none;
   flex: 1;
+  transition: color var(--transition-fast);
 }
 
 .post-title:hover {
-  color: #42b983;
+  color: var(--color-primary);
 }
 
 .post-meta {
@@ -253,60 +256,107 @@ h2 {
   align-items: center;
   gap: 14px;
   font-size: 0.85rem;
-  color: #5a7070;
+  color: var(--color-text-secondary);
   flex-wrap: wrap;
 }
 
-.username-admin { color: purple !important; font-weight: 600; }
-.username-moderator { color: red !important; font-weight: 600; }
-
-.delete-btn {
-  padding: 4px 14px;
-  background: #fff4f4;
-  border: 1px solid #ffcccc;
-  color: #c0392b;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.delete-btn:hover {
-  background: #c0392b;
-  color: white;
-  border-color: #c0392b;
-}
-
-.loading-state,
-.empty-state {
-  text-align: center;
-  padding: 40px;
-  color: #999;
-  font-size: 1rem;
-}
-
+/* 作者链接 */
 .author-link {
   display: flex;
   align-items: center;
   gap: 6px;
   text-decoration: none;
   color: inherit;
+  transition: color var(--transition-fast);
 }
+
+.author-link:hover {
+  color: var(--color-primary);
+}
+
 .avatar-small {
   width: 24px;
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
 }
+
+/* 部门标签 */
 .dept-tag {
   font-size: 0.8rem;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: #f0f6f3;
-  color: #2c7a5c;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
+
 .external-dept {
   background: #f5f5f5;
-  color: #888;
+  color: var(--color-text-muted);
+}
+
+/* 角色颜色 */
+.username-admin { color: var(--color-info) !important; font-weight: 600; }
+.username-moderator { color: var(--color-moderator) !important; font-weight: 600; }
+
+/* 删除按钮 */
+.delete-btn {
+  padding: 4px 14px;
+  background: var(--color-danger-light);
+  border: 1px solid #ffcccc;
+  color: var(--color-danger);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.delete-btn:hover {
+  background: var(--color-danger);
+  color: #fff;
+  border-color: var(--color-danger);
+}
+
+/* 加载与空状态 */
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--color-text-muted);
+  font-size: 1rem;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .post-list {
+    padding: var(--space-md);
+  }
+  .post-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+  .post-meta {
+    gap: 8px;
+  }
+  .actions {
+    justify-content: space-between;
+  }
+  .new-post-link {
+    margin-left: 0;
+    margin-top: var(--space-sm);
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .actions {
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+  }
+  .actions button {
+    flex: 1 1 auto;
+  }
 }
 </style>

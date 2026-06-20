@@ -41,97 +41,98 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* =============================================
+   CloudPage 网盘根组件样式（应用全局设计令牌）
+   选项卡与内容容器
+   ============================================= */
+
 .cloud-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 24px 48px;
+  padding: var(--space-xl) var(--space-lg) 48px;
 }
 
 /* ---- 选项卡区域 ---- */
 .tabs {
   display: flex;
-  gap: 12px;
-  margin-bottom: 32px;
-  padding: 8px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);
+  padding: var(--space-xs);
   background: #f8fbfa;
-  border-radius: 48px;
+  border-radius: var(--radius-full);
   border: 1px solid rgba(66, 185, 131, 0.15);
   box-shadow: 0 4px 12px -6px rgba(66, 185, 131, 0.08);
   width: fit-content;
-  position: relative;
 }
 
-/* 单个选项卡按钮 */
 .tabs button {
   position: relative;
   padding: 10px 28px;
   background: transparent;
   border: none;
-  border-radius: 40px;
+  border-radius: var(--radius-full);
   font-size: 1rem;
   font-weight: 600;
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: var(--transition-smooth);
   letter-spacing: 0.3px;
-  white-space: nowrap;
 }
 
-/* 悬停未激活态 */
-.tabs button:not(.active):hover {
-  color: #42b983;
+.tabs button:hover {
+  color: var(--color-primary);
   background: rgba(66, 185, 131, 0.06);
 }
 
-/* 激活态 - 品牌渐变胶囊 */
 .tabs button.active {
-  background: linear-gradient(135deg, #42b983, #2ecc71);
+  background: var(--color-primary-gradient);
   color: #ffffff;
-  box-shadow: 0 6px 14px rgba(66, 185, 131, 0.35);
+  box-shadow: var(--shadow-green);
   transform: translateY(-1px);
-}
-
-/* 激活态光晕装饰 */
-.tabs button.active::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(66,185,131,0.3), transparent);
-  z-index: -1;
-  filter: blur(6px);
-  opacity: 0.6;
 }
 
 /* ---- 内容区容器 ---- */
 .cloud-page > :last-child {
   background: #ffffff;
-  border-radius: 24px;
-  padding: 4px; /* 内边距由子组件自己控制，这里仅提供基础容器 */
-  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-xl);
+  padding: 4px;
+  box-shadow: var(--shadow-sm);
   border: 1px solid rgba(66, 185, 131, 0.1);
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow var(--transition-fast);
 }
 
 .cloud-page > :last-child:hover {
-  box-shadow: 0 20px 40px -12px rgba(66, 185, 131, 0.12);
+  box-shadow: var(--shadow-md);
 }
 
-/* 响应式调整 */
+/* 响应式 */
 @media (max-width: 700px) {
   .cloud-page {
-    padding: 20px 16px 40px;
+    padding: var(--space-lg) var(--space-md);
   }
-  
   .tabs {
     width: 100%;
     justify-content: center;
-    gap: 8px;
+    gap: var(--space-xs);
   }
-  
   .tabs button {
-    padding: 8px 20px;
+    padding: var(--space-sm) 20px;
     font-size: 0.95rem;
+  }
+}
+
+/* 移动端额外微调 */
+@media (max-width: 480px) {
+  .cloud-page {
+    padding: var(--space-sm);
+  }
+  .tabs {
+    width: 100%;
+    justify-content: space-around;
+  }
+  .tabs button {
+    padding: 8px 16px;
+    font-size: 0.85rem;
   }
 }
 </style>

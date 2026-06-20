@@ -78,40 +78,45 @@ const handleAvatarError = (e) => {
 </script>
 
 <style scoped>
-/* 主导航栏 - 与主页导航栏视觉统一 */
+/* =============================================
+   MainLayout 导航栏样式（应用全局设计令牌）
+   使用 CSS 变量替换硬编码，保留原有布局逻辑
+   ============================================= */
+
+/* 主导航栏 - 采用全局卡片风格 */
 .navbar {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 12px 24px;
-  margin: 20px auto;
+  gap: var(--space-md);
+  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-sm) var(--space-lg);
+  margin: var(--space-lg) auto;
   max-width: 1200px;
-  transition: all 0.2s ease;
+  transition: var(--transition-smooth);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .navbar:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
-/* 导航链接样式（首页、论坛、网盘、登录） */
+/* 导航链接 - 统一为轮廓按钮风格 */
 .navbar a {
   text-decoration: none;
   background: transparent;
-  padding: 8px 16px;
-  border-radius: 30px;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
   font-weight: 500;
-  color: #333;
-  transition: all 0.25s;
+  color: var(--color-text);
+  transition: var(--transition-fast);
 }
 
 .navbar a:hover {
-  background-color: #42b98310;
-  color: #42b983;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
   transform: translateY(-2px);
 }
 
@@ -120,71 +125,71 @@ const handleAvatarError = (e) => {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 12px;
-  color: #2c3e50;
+  gap: var(--space-sm);
   font-weight: 500;
+  color: var(--color-text);
 }
 
-/* 退出按钮样式 - 与链接风格协调 */
-.user-info button {
-  background: transparent;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 30px;
-  font-weight: 500;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.25s;
-  font-size: 0.9rem;
-}
-
-.user-info button:hover {
-  background-color: #ff4d4f10;
-  color: #ff4d4f;
-  transform: translateY(-2px);
-}
-
+/* 用户链接（头像+名字） */
 .user-link {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   text-decoration: none;
   color: inherit;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  transition: var(--transition-fast);
 }
 
+.user-link:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* 头像 */
 .user-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-dark);
 }
 
-.username-admin {
-  color: purple !important;
-  font-weight: 600;
+/* 角色颜色标识（管理员 / 内部 / 外部） */
+.username-admin { color: var(--color-info) !important; font-weight: 600; }
+.username-internal { color: var(--color-primary) !important; font-weight: 600; }
+.username-external { color: #999 !important; font-weight: 600; }
+
+/* 退出按钮 */
+.user-info button {
+  background: transparent;
+  border: none;
+  padding: var(--space-xs) 14px;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: var(--transition-fast);
 }
 
-.username-internal {
-  color: #42b983 !important;
-  font-weight: 600;
+.user-info button:hover {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  transform: translateY(-2px);
 }
 
-.username-external {
-  color: #999 !important;
-  font-weight: 600;
-}
-
+/* 登录链接 */
 .login-link {
   margin-left: auto;
 }
 
-/* 移动端适配：换行、右对齐调整 */
+/* 移动端适配 */
 @media (max-width: 768px) {
   .navbar {
     flex-wrap: wrap;
-    padding: 12px 16px;
-    gap: 8px;
+    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-sm);
   }
   .user-info {
     margin-left: 0;

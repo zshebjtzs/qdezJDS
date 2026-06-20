@@ -66,70 +66,75 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* =============================================
+   ForumPage 板块列表样式（应用全局设计令牌）
+   统一卡片、按钮、标签风格
+   ============================================= */
+
 .forum-page {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--space-lg) var(--space-md);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 h2 {
-  margin-bottom: 20px;
   font-size: 2rem;
   font-weight: 700;
-  color: #1e2b39;
-  border-left: 6px solid #42b983;
-  padding-left: 16px;
+  color: var(--color-text);
+  border-left: 6px solid var(--color-primary);
+  padding-left: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
 /* ---- 分段控制器切换按钮 ---- */
 .segmented-tabs {
   display: inline-flex;
   background: #f0f2f1;
-  border-radius: 30px;
-  padding: 4px;
-  margin-bottom: 28px;
+  border-radius: var(--radius-full);
+  padding: var(--space-xs);
+  margin-bottom: var(--space-xl);
 }
 
 .segmented-tabs button {
-  padding: 9px 24px;
+  padding: 9px var(--space-lg);
   border: none;
   border-radius: 26px;
   background: transparent;
-  color: #5a7070;
+  color: var(--color-text-secondary);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: var(--transition-smooth);
 }
 
 .segmented-tabs button:hover {
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 .segmented-tabs button.active {
-  background: #42b983;
+  background: var(--color-primary-gradient);
   color: #fff;
-  box-shadow: 0 4px 10px rgba(66, 185, 131, 0.3);
+  box-shadow: var(--shadow-green);
 }
 
-/* ---- 板块列表容器（明显边框 + 阴影） ---- */
+/* ---- 板块列表容器 ---- */
 .category-list {
-  background: #ffffff;
+  background: #fff;
   border: 2px solid #d6e2de;
-  border-radius: 14px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
 .category-row {
   display: flex;
   align-items: center;
-  padding: 16px 22px;
-  background: #ffffff;
-  border-bottom: 1px solid #eef3f0;
-  transition: background 0.2s;
+  padding: var(--space-md) 22px;
+  background: #fff;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
 }
 
 .category-row:last-child {
@@ -137,26 +142,52 @@ h2 {
 }
 
 .category-row:hover {
-  background: #f9fdfb;
+  background: var(--color-primary-bg);
 }
 
 .category-link {
   font-size: 1.05rem;
   font-weight: 600;
-  color: #1e2b39;
+  color: var(--color-text);
   text-decoration: none;
   flex: 1;
+  transition: color var(--transition-fast);
 }
 
 .category-link:hover {
-  color: #42b983;
+  color: var(--color-primary);
 }
 
+/* 加载与空状态 */
 .loading-state,
 .empty-state {
   text-align: center;
-  padding: 40px;
-  color: #999;
+  padding: var(--space-2xl);
+  color: var(--color-text-muted);
   font-size: 1rem;
+}
+
+/* 响应式：平板/手机下板块列表全宽，移除悬停浮起效果 */
+@media (max-width: 768px) {
+  .forum-page {
+    padding: var(--space-md);
+  }
+  .category-row {
+    padding: var(--space-md) 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .segmented-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+  .segmented-tabs button {
+    padding: 6px 14px;
+    font-size: 0.9rem;
+  }
+  .category-link {
+    font-size: 0.95rem;
+  }
 }
 </style>

@@ -53,6 +53,11 @@
 </template>
 
 <style scoped>
+/* =============================================
+   Activity 社团活动页样式（应用全局设计令牌）
+   统一标题、筛选栏、卡片、分页占位、响应式
+   ============================================= */
+
 /* 活动页面容器 */
 .activity-page {
   margin: 40px 0 60px;
@@ -82,7 +87,7 @@
 
 .page-header h2 {
   font-size: 2.8rem;
-  color: #2c3e50;
+  color: var(--color-text);
   margin-bottom: 12px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -96,7 +101,7 @@
 
 .subtitle {
   font-size: 1.2rem;
-  color: #5a7070;
+  color: var(--color-text-secondary);
   max-width: 600px;
   margin: 0 auto;
   font-weight: 400;
@@ -109,7 +114,7 @@
   display: block;
   width: 80px;
   height: 3px;
-  background: linear-gradient(90deg, transparent, #42b983, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
   margin: 22px auto 0;
   border-radius: 3px;
 }
@@ -134,11 +139,11 @@
 
 .tab {
   font-size: 1rem;
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   cursor: pointer;
   padding-bottom: 10px;
   border-bottom: 2.5px solid transparent;
-  transition: all 0.25s ease;
+  transition: var(--transition-fast);
   font-weight: 500;
   position: relative;
 }
@@ -150,8 +155,8 @@
   left: 0;
   width: 0;
   height: 2.5px;
-  background: #42b983;
-  transition: width 0.3s ease;
+  background: var(--color-primary);
+  transition: width var(--transition-fast);
   border-radius: 3px;
 }
 
@@ -160,8 +165,8 @@
 }
 
 .tab.active {
-  color: #42b983;
-  border-bottom-color: #42b983;
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -170,13 +175,13 @@
 }
 
 .tab:hover {
-  color: #42b983;
+  color: var(--color-primary);
 }
 
 .search-placeholder {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
   padding: 10px 20px;
   background: rgba(249, 250, 250, 0.8);
   backdrop-filter: blur(4px);
@@ -184,12 +189,12 @@
   color: #6f8a7c;
   font-size: 0.95rem;
   border: 1px solid rgba(66, 185, 131, 0.25);
-  box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s, border-color 0.3s;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .search-placeholder:hover {
-  border-color: #42b983;
+  border-color: var(--color-primary);
   box-shadow: 0 6px 16px -8px rgba(66, 185, 131, 0.2);
 }
 
@@ -209,10 +214,10 @@
 /* 活动卡片 - 深度优化，参照关于页部门卡片 */
 .activity-card {
   background: white;
-  border-radius: 20px;
-  box-shadow: 0 12px 24px -12px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: var(--transition-smooth);
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(66, 185, 131, 0.1);
@@ -227,7 +232,7 @@
   left: 0;
   width: 100%;
   height: 5px;
-  background: linear-gradient(90deg, #42b983, #7ee0b0);
+  background: linear-gradient(90deg, var(--color-primary), #7ee0b0);
   transform: scaleX(0);
   transition: transform 0.4s ease;
   transform-origin: left;
@@ -236,7 +241,7 @@
 
 .activity-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 24px 36px -16px rgba(66, 185, 131, 0.25);
+  box-shadow: var(--shadow-lg);
   border-color: rgba(66, 185, 131, 0.3);
 }
 
@@ -285,15 +290,15 @@
 /* 标题占位 */
 .card-title-placeholder {
   font-size: 1.4rem;
-  color: #1e2b39;
-  margin-bottom: 12px;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
   font-weight: 700;
   letter-spacing: -0.3px;
-  transition: color 0.2s;
+  transition: color var(--transition-fast);
 }
 
 .activity-card:hover .card-title-placeholder {
-  color: #42b983;
+  color: var(--color-primary);
 }
 
 /* 元信息行 */
@@ -310,7 +315,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #fafdfb;
+  background: var(--color-primary-bg);
   padding: 2px 10px 2px 8px;
   border-radius: 30px;
   border: 1px solid #e7f0ec;
@@ -318,7 +323,7 @@
 
 /* 描述占位 */
 .card-desc-placeholder {
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   line-height: 1.6;
   margin-bottom: 20px;
   flex: 1;
@@ -332,7 +337,7 @@
   align-items: center;
   margin-top: auto;
   padding-top: 14px;
-  border-top: 1px solid #edf3f0;
+  border-top: 1px solid var(--color-border);
 }
 
 .status-badge {
@@ -350,22 +355,22 @@
   background: #e1f3ea;
   color: #1e6f5c;
   border-color: #b3dfcf;
-  box-shadow: 0 2px 6px rgba(66, 185, 131, 0.1);
+  box-shadow: var(--shadow-green);
 }
 
 .detail-link {
-  color: #42b983;
+  color: var(--color-primary);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-fast);
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .detail-link:hover {
-  color: #2a7a5c;
+  color: var(--color-primary-hover);
   transform: translateX(4px);
 }
 
@@ -385,26 +390,26 @@
   justify-content: center;
   border-radius: 14px;
   background: white;
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   font-weight: 600;
   box-shadow: 0 4px 8px -4px rgba(0, 0, 0, 0.04);
   border: 1px solid #e2ece7;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: var(--transition-fast);
   font-size: 0.95rem;
 }
 
 .page-btn.active {
-  background: #42b983;
+  background: var(--color-primary);
   color: white;
-  border-color: #42b983;
-  box-shadow: 0 8px 16px -8px rgba(66, 185, 131, 0.4);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-green);
 }
 
 .page-btn:hover:not(.active) {
-  background: #f4faf7;
-  color: #42b983;
-  border-color: #42b983;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
   transform: translateY(-2px);
   box-shadow: 0 8px 16px -8px rgba(66, 185, 131, 0.2);
 }

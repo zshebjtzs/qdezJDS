@@ -82,12 +82,17 @@ const changePage = (page) => {
 </script>
 
 <style scoped>
+/* =============================================
+   通用分页组件样式（应用全局设计令牌）
+   数字按钮、方向按钮、高亮状态、禁用态
+   ============================================= */
+
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 6px;
-  margin: 20px 0;
+  margin: var(--space-lg) 0;
   flex-wrap: wrap;
 }
 
@@ -96,24 +101,25 @@ const changePage = (page) => {
   height: 36px;
   padding: 0 6px;
   background: #fff;
-  border: 1px solid #d0ddd5;
-  border-radius: 8px;
-  color: #2c3e50;
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-fast);
 }
 
 .page-btn:hover:not(:disabled):not(.active) {
-  background: #f4faf7;
-  border-color: #42b983;
-  color: #42b983;
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .page-btn.active {
-  background: #42b983;
+  background: var(--color-primary-gradient);
   color: #fff;
-  border-color: #42b983;
+  border-color: transparent;
+  box-shadow: var(--shadow-green);
 }
 
 .page-btn:disabled {

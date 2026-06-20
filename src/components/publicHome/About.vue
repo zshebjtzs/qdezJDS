@@ -165,6 +165,11 @@
 </template>
 
 <style scoped>
+/* =============================================
+   About 社团介绍页样式（应用全局设计令牌）
+   统一卡片、标题、装饰、响应式
+   ============================================= */
+
 /* 关于页面容器 */
 .about-page {
   margin: 40px 0 60px;
@@ -192,11 +197,11 @@
 
 .page-header h2 {
   font-size: 2.8rem;
-  color: #2c3e50;
-  margin-bottom: 12px;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
   letter-spacing: -0.5px;
   font-weight: 700;
-  background: linear-gradient(135deg, #2c3e50 0%, #42b983 80%);
+  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 80%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -206,7 +211,7 @@
 
 .subtitle {
   font-size: 1.2rem;
-  color: #666;
+  color: var(--color-text-secondary);
   max-width: 600px;
   margin: 0 auto;
   font-weight: 400;
@@ -216,7 +221,7 @@
 .header-divider {
   width: 80px;
   height: 3px;
-  background: linear-gradient(90deg, transparent, #42b983, transparent);
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
   margin: 20px auto 0;
   border-radius: 2px;
 }
@@ -225,16 +230,16 @@
 .section-title {
   display: flex;
   align-items: center;
-  margin-bottom: 28px;
+  margin-bottom: var(--space-xl);
 }
 
 .title-deco {
   width: 6px;
   height: 28px;
-  background: linear-gradient(to bottom, #42b983, #2ecc71);
+  background: linear-gradient(to bottom, var(--color-primary), #2ecc71);
   border-radius: 6px;
   margin-right: 15px;
-  box-shadow: 0 2px 8px rgba(66, 185, 131, 0.3);
+  box-shadow: var(--shadow-green);
 }
 
 .title-deco.right {
@@ -245,27 +250,27 @@
 
 .section-title h3 {
   font-size: 1.8rem;
-  color: #2c3e50;
+  color: var(--color-text);
   font-weight: 600;
   margin: 0;
   position: relative;
 }
 
-/* 简介卡片增强 */
+/* 简介卡片 —— 使用全局卡片风格 */
 .intro-card.enhanced {
   display: flex;
   gap: 40px;
-  background: white;
-  border-radius: 24px;
+  background: #fff;
+  border-radius: var(--radius-xl);
   padding: 30px 30px 30px 40px;
-  box-shadow: 0 15px 30px -10px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-sm);
   border: 1px solid rgba(66, 185, 131, 0.15);
   backdrop-filter: blur(2px);
-  transition: box-shadow 0.3s;
+  transition: box-shadow var(--transition-fast);
 }
 
 .intro-card.enhanced:hover {
-  box-shadow: 0 20px 40px -12px rgba(66, 185, 131, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .intro-text {
@@ -273,29 +278,29 @@
 }
 
 .highlight {
-  color: #42b983;
+  color: var(--color-primary);
   font-weight: 600;
   background: linear-gradient(120deg, rgba(66,185,131,0.1) 0%, rgba(66,185,131,0.1) 100%);
-  padding: 2px 8px;
-  border-radius: 20px;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-full);
 }
 
 .slogan-text {
   font-weight: 600;
-  color: #2c3e50;
-  border-left: 3px solid #42b983;
-  padding-left: 12px;
+  color: var(--color-text);
+  border-left: 3px solid var(--color-primary);
+  padding-left: var(--space-sm);
 }
 
 .stat-badges {
   display: flex;
   gap: 20px;
-  margin-top: 20px;
+  margin-top: var(--space-lg);
 }
 
 .stat-badge {
   background: #f8fbfa;
-  padding: 6px 16px;
+  padding: 6px var(--space-md);
   border-radius: 40px;
   font-size: 0.9rem;
   color: #555;
@@ -303,9 +308,9 @@
 }
 
 .stat-badge strong {
-  color: #42b983;
+  color: var(--color-primary);
   font-size: 1.2rem;
-  margin-right: 4px;
+  margin-right: var(--space-xs);
 }
 
 /* 图片占位增强 */
@@ -317,8 +322,8 @@
 .img-box {
   height: 200px;
   background: linear-gradient(145deg, #eaf7f0 0%, #c8e6d9 100%);
-  border-radius: 20px;
-  margin-bottom: 12px;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-sm);
   border: 1px solid rgba(66, 185, 131, 0.3);
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.02), 0 8px 20px -8px rgba(66,185,131,0.2);
   position: relative;
@@ -336,7 +341,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: backdrop-filter 0.3s;
+  transition: backdrop-filter var(--transition-fast);
 }
 
 .img-box:hover .img-overlay {
@@ -347,7 +352,7 @@
   font-size: 3rem;
   opacity: 0.6;
   transform: scale(1);
-  transition: transform 0.3s;
+  transition: transform var(--transition-fast);
 }
 
 .img-box:hover .overlay-icon {
@@ -356,7 +361,7 @@
 }
 
 .img-caption {
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
   display: flex;
   align-items: center;
@@ -370,15 +375,15 @@
   background: #ddd;
 }
 
-/* 部门卡片深度优化 */
+/* 部门卡片 —— 深度统一卡片风格 */
 .dept-card {
-  background: white;
-  border-radius: 20px;
+  background: #fff;
+  border-radius: var(--radius-lg);
   padding: 30px 20px 25px;
-  box-shadow: 0 10px 20px -8px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-sm);
   text-align: center;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border: 1px solid #f0f6f3;
+  transition: var(--transition-smooth);
+  border: 1px solid var(--color-border);
   position: relative;
   overflow: hidden;
 }
@@ -390,15 +395,15 @@
   left: 0;
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, #42b983, #7ee0b0);
+  background: linear-gradient(90deg, var(--color-primary), #7ee0b0);
   transform: scaleX(0);
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-smooth);
   transform-origin: left;
 }
 
 .dept-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 30px -10px rgba(66, 185, 131, 0.15);
+  box-shadow: var(--shadow-lg);
   border-color: rgba(66, 185, 131, 0.3);
 }
 
@@ -414,7 +419,7 @@
 
 .dept-icon {
   font-size: 3.2rem;
-  transition: transform 0.2s;
+  transition: transform var(--transition-fast);
   filter: drop-shadow(0 4px 6px rgba(66,185,131,0.2));
 }
 
@@ -433,7 +438,7 @@
   transform: translate(-50%, -50%);
   z-index: -1;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity var(--transition-fast);
 }
 
 .dept-card:hover .icon-glow {
@@ -442,14 +447,14 @@
 
 .dept-card h4 {
   font-size: 1.6rem;
-  color: #2c3e50;
-  margin-bottom: 12px;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
   font-weight: 700;
   letter-spacing: -0.3px;
 }
 
 .dept-desc {
-  color: #666;
+  color: var(--color-text-secondary);
   line-height: 1.7;
   font-size: 0.95rem;
   margin-bottom: 20px;
@@ -458,11 +463,11 @@
 .card-footer-deco {
   width: 40px;
   height: 2px;
-  background: #42b983;
+  background: var(--color-primary);
   margin: 0 auto;
   border-radius: 2px;
   opacity: 0.3;
-  transition: width 0.3s, opacity 0.3s;
+  transition: width var(--transition-fast), opacity var(--transition-fast);
 }
 
 .dept-card:hover .card-footer-deco {
@@ -478,11 +483,11 @@
 }
 
 .info-panel.modern {
-  background: white;
-  border-radius: 20px;
-  padding: 24px 28px;
-  box-shadow: 0 10px 20px -8px rgba(0,0,0,0.06);
-  border: 1px solid #f0f6f3;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -491,7 +496,7 @@
 .info-item {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: var(--space-md);
   padding: 14px 0;
   border-bottom: 1px solid #f0f0f0;
 }
@@ -514,11 +519,11 @@
 
 .info-label {
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--color-text);
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-xs);
 }
 
 .info-value {
@@ -529,14 +534,14 @@
 
 /* 荣誉墙 */
 .honor-wall {
-  background: linear-gradient(135deg, #f9fdfb 0%, #ffffff 100%);
-  border-radius: 20px;
-  padding: 24px 20px;
-  box-shadow: 0 10px 20px -8px rgba(0,0,0,0.04);
+  background: linear-gradient(135deg, var(--color-primary-bg) 0%, #ffffff 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) 20px;
+  box-shadow: var(--shadow-sm);
   border: 1px solid rgba(66, 185, 131, 0.15);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: var(--space-md);
   align-content: start;
 }
 
@@ -545,11 +550,11 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 12px 8px;
-  background: white;
-  border-radius: 16px;
+  padding: var(--space-sm) var(--space-sm);
+  background: #fff;
+  border-radius: var(--radius-md);
   box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-  transition: transform 0.2s;
+  transition: transform var(--transition-fast);
 }
 
 .honor-item:hover {
@@ -558,12 +563,12 @@
 
 .honor-badge {
   font-size: 2rem;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-sm);
 }
 
 .honor-item span:last-child {
   font-size: 0.9rem;
-  color: #2c3e50;
+  color: var(--color-text);
   font-weight: 500;
 }
 
@@ -572,19 +577,19 @@
   text-align: center;
   margin-top: 60px;
   padding: 30px 20px;
-  background: linear-gradient(105deg, #f9fdfb 0%, #ffffff 100%);
+  background: linear-gradient(105deg, var(--color-primary-bg) 0%, #ffffff 100%);
   border-radius: 60px 20px 60px 20px;
   font-size: 1.3rem;
-  color: #2c3e50;
+  color: var(--color-text);
   font-style: normal;
-  box-shadow: 0 10px 20px -8px rgba(66,185,131,0.1);
+  box-shadow: var(--shadow-sm);
   border: 1px solid rgba(66, 185, 131, 0.2);
   position: relative;
 }
 
 .vision-quote {
   font-size: 3rem;
-  color: #42b983;
+  color: var(--color-primary);
   opacity: 0.3;
   line-height: 1;
   font-family: serif;
@@ -605,19 +610,19 @@
     flex-direction: column;
     padding: 25px;
   }
-  
+
   .info-wrapper {
     grid-template-columns: 1fr;
   }
-  
+
   .honor-wall {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .page-header h2 {
     font-size: 2.2rem;
   }
-  
+
   .stat-badges {
     flex-wrap: wrap;
   }

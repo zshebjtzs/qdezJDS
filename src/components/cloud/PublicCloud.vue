@@ -182,19 +182,23 @@ const formatDate = (iso) => {
 <style scoped>
 @import '@/styles/cloud-common.css';
 
-/* ---------- 头部区域覆盖 ---------- */
+/* =============================================
+   PublicCloud 公共网盘独有样式
+   部门按钮、刷新、搜索框、上传者标签、布局修正
+   ============================================= */
+
+/* ----- 头部布局覆盖（标题 + 部门 + 上传同一行）----- */
 .header {
-  display: block;
-  margin-bottom: 24px;
+  display: block; /* 覆盖公共 flex，自行用 header-main 布局 */
+  margin-bottom: var(--space-lg);
   padding-bottom: 18px;
   border-bottom: 1px solid rgba(66, 185, 131, 0.15);
 }
 
-/* 第一行：标题 + 部门按钮 + 上传按钮 —— 改用 grid 固定左中右位置 */
 .header-main {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-md);
   flex-wrap: nowrap;
 }
 
@@ -204,49 +208,46 @@ const formatDate = (iso) => {
   line-height: 1.4;
 }
 
+/* 部门按钮组居中 */
 .dept-buttons {
   flex: 1;
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-sm);
   align-items: center;
 }
 
+/* 上传区域靠右 */
 .upload-section {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  /* 保证即使内部按钮隐藏，依然保持宽度占位 */
-  min-width: 90px;  /* 可选，按需要保留上传按钮大约宽度，防止坍塌 */
-  justify-content: flex-end;
 }
 
-/* 第二行：刷新按钮 + 搜索框 —— 搜索框靠右对齐，与上传按钮右侧边缘对齐 */
+/* ----- 第二行：刷新按钮 + 搜索框 ----- */
 .header-controls {
   margin-top: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  /* 不再使用 padding-left: 18px; 让刷新按钮自然位于左侧 */
+  gap: var(--space-sm);
 }
 
-/* 刷新按钮保持原样，无额外偏移 */
 .refresh-btn {
   padding: 3px 14px;
   font-size: 0.8rem;
   background: #ffffff;
-  border: 1px solid #d0ddd5;
-  border-radius: 20px;
-  color: #4a5b6b;
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: var(--transition-fast);
   flex-shrink: 0;
 }
 
 .refresh-btn:hover {
-  background: #f4faf7;
-  border-color: #42b983;
-  color: #42b983;
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .refresh-btn:disabled {
@@ -254,17 +255,17 @@ const formatDate = (iso) => {
   cursor: not-allowed;
 }
 
-/* 搜索框：设置固定宽度并靠右显示（自动右对齐） */
+/* 搜索框 */
 .search-input {
-  width: 220px;                 /* 与私有网盘一致 */
+  width: 220px;
   padding: 6px 12px;
-  border: 1px solid #d0ddd5;
-  border-radius: 20px;
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-full);
   font-size: 0.9rem;
-  color: #2c3e50;
+  color: var(--color-text);
   outline: none;
-  transition: border-color 0.25s ease;
-  margin-left: auto;            /* 推到最右侧，与上传按钮右侧对齐 */
+  transition: border-color var(--transition-fast);
+  margin-left: auto;
 }
 
 .search-input::placeholder {
@@ -272,90 +273,82 @@ const formatDate = (iso) => {
 }
 
 .search-input:focus {
-  border-color: #42b983;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(66,185,131,0.1);
 }
 
 /* 搜索结果标题 */
 .search-title {
   font-size: 1rem;
-  color: #42b983;
+  color: var(--color-primary);
   font-weight: 600;
-  margin: 0 0 12px 0;
-  padding-left: 8px;
-  border-left: 3px solid #42b983;
+  margin: 0 0 var(--space-sm) 0;
+  padding-left: var(--space-sm);
+  border-left: 3px solid var(--color-primary);
 }
 
-/* 部门按钮样式 */
+/* ----- 部门按钮样式（与全局标签统一）----- */
 .dept-buttons button {
   padding: 7px 20px;
   background: white;
-  border: 1.5px solid #d0ddd5;
-  border-radius: 30px;
+  border: 1.5px solid var(--color-border-dark);
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 0.9rem;
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.25s ease;
-  letter-spacing: 0.3px;
+  transition: var(--transition-fast);
 }
 
 .dept-buttons button:hover {
-  border-color: #42b983;
-  color: #42b983;
-  background: rgba(66, 185, 131, 0.04);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
   transform: translateY(-1px);
 }
 
 .dept-buttons button.active {
-  background: linear-gradient(135deg, #42b983, #2ecc71);
+  background: var(--color-primary-gradient);
   color: white;
   border-color: transparent;
-  box-shadow: 0 6px 14px rgba(66, 185, 131, 0.3);
+  box-shadow: var(--shadow-green);
 }
 
-.dept-buttons button.active:hover {
-  background: #359b6e;
-  box-shadow: 0 8px 18px rgba(66, 185, 131, 0.4);
-}
-
-/* 上传按钮 */
+/* ----- 上传按钮（扩展公共 .header button）----- */
 .upload-section button {
   padding: 9px 24px;
-  background: linear-gradient(135deg, #42b983, #2ecc71);
+  background: var(--color-primary-gradient);
   color: white;
   border: none;
-  border-radius: 30px;
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 6px 14px rgba(66, 185, 131, 0.3);
-  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  letter-spacing: 0.5px;
+  box-shadow: var(--shadow-green);
+  transition: var(--transition-smooth);
 }
 
 .upload-section button:hover {
-  background: linear-gradient(135deg, #359b6e, #27ae60);
+  filter: brightness(1.05);
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(66, 185, 131, 0.4);
 }
 
-/* 上传者标签 */
+/* ----- 上传者标签 ----- */
 .file-owner {
-  color: #6f8a7c;
+  color: var(--color-text-secondary);
   font-size: 0.8rem;
   background: #edf5f1;
   padding: 2px 10px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   border: 1px solid #dbe8e1;
 }
 
-/* 响应式 */
+/* ----- 响应式 ----- */
 @media (max-width: 700px) {
   .header-main {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px;
+    gap: var(--space-sm);
   }
   .header-main h3 {
     width: 100%;
@@ -373,10 +366,11 @@ const formatDate = (iso) => {
   .header-controls {
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: var(--space-sm);
   }
   .search-input {
     width: 100%;
+    margin-left: 0;
   }
 }
 </style>

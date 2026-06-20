@@ -437,22 +437,29 @@ onMounted(loadUser)
 </script>
 
 <style scoped>
+/* =============================================
+   userInfo.vue 样式（应用全局设计令牌）
+   覆盖个人主页所有区域：背景、头像、资料、联系方式、
+   最近帖子、弹窗、按钮、加载状态
+   ============================================= */
+
 .user-profile {
   max-width: 860px;
   margin: 0 auto 60px;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
+/* 背景图区域 */
 .cover-section {
   height: 200px;
   position: relative;
   cursor: pointer;
-  transition: opacity 0.3s;
+  transition: opacity var(--transition-fast);
 }
 .cover-section:hover .cover-upload-hint {
   opacity: 1;
@@ -464,26 +471,28 @@ onMounted(loadUser)
   transform: translate(-50%, -50%);
   background: rgba(0,0,0,0.4);
   color: #fff;
-  padding: 6px 16px;
-  border-radius: 20px;
+  padding: 6px var(--space-md);
+  border-radius: var(--radius-full);
   font-size: 0.9rem;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity var(--transition-fast);
 }
 
+/* 头像与基本信息头部 */
 .info-header {
   display: flex;
   align-items: flex-start;
-  padding: 20px 24px 24px;
+  padding: var(--space-lg) var(--space-lg) var(--space-lg);
   background: #fff;
   margin-top: -50px; /* 头像上移，覆盖背景 */
   position: relative;
   z-index: 2;
 }
 
+/* 头像区域 */
 .avatar-wrapper {
   flex-shrink: 0;
-  margin-right: 20px;
+  margin-right: var(--space-lg);
   position: relative;
   cursor: pointer;
 }
@@ -493,7 +502,7 @@ onMounted(loadUser)
   border-radius: 50%;
   border: 4px solid #fff;
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
 }
 .avatar-upload-hint {
   position: absolute;
@@ -503,99 +512,108 @@ onMounted(loadUser)
   background: rgba(0,0,0,0.5);
   color: #fff;
   font-size: 0.75rem;
-  padding: 2px 8px;
+  padding: 2px var(--space-sm);
   border-radius: 10px;
   white-space: nowrap;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity var(--transition-fast);
 }
 .avatar-wrapper:hover .avatar-upload-hint {
   opacity: 1;
 }
 
+/* 基本信息文本 */
 .basic-info {
   flex: 1;
 }
 
 .name-line {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-sm);
 }
 .display-name {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e2b39;
+  color: var(--color-text);
 }
 .admin-name {
-  color: purple !important;
+  color: var(--color-info) !important;
 }
 .previous-name {
-  margin-left: 12px;
+  margin-left: var(--space-sm);
   font-size: 0.85rem;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
+/* 角色与部门标签行 */
 .meta-line {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-sm);
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-sm);
   font-size: 0.9rem;
 }
 .role-badge {
-  background: #42b983;
+  background: var(--color-primary);
   color: white;
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-full);
   font-size: 0.8rem;
 }
 .role-external { background: #999; }
-.role-admin { background: purple; }
+.role-admin { background: var(--color-info); }
 .dept-badge {
-  background: #f0f6f3;
-  color: #2c7a5c;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
   padding: 2px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-full);
 }
 
+/* 个人简介 */
 .bio-block {
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
   line-height: 1.6;
-  margin-top: 8px;
+  margin-top: var(--space-sm);
 }
 
 .bio-edit textarea {
   width: 100%;
   height: 80px;
-  padding: 8px;
-  border: 1px solid #d9e5df;
-  border-radius: 8px;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-sm);
   font-family: inherit;
   resize: vertical;
 }
 
-/* 按钮样式 */
+/* 操作按钮组 */
 .profile-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   flex-shrink: 0;
-  margin-left: auto;   /* 将按钮推到右侧 */
+  margin-left: auto;
   flex-wrap: wrap;
 }
+
+/* 按钮复用全局 .btn 风格，但保留本地定义以确保 scoped 特异性 */
 .btn {
-  padding: 6px 16px;
-  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px var(--space-md);
+  border-radius: var(--radius-full);
   border: none;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
+  transition: var(--transition-fast);
   font-size: 0.9rem;
 }
 .btn-primary {
-  background: #42b983;
+  background: var(--color-primary-gradient);
   color: white;
+  box-shadow: var(--shadow-green);
 }
-.btn-primary:hover { background: #359b6e; }
+.btn-primary:hover { filter: brightness(1.05); }
 .btn-secondary {
   background: #f0f0f0;
   color: #333;
@@ -605,52 +623,52 @@ onMounted(loadUser)
   color: #666;
 }
 
-/* 联系方式 */
+/* 联系方式区域 */
 .section {
-  padding: 20px 24px;
-  border-top: 1px solid #f0f3f0;
+  padding: var(--space-lg) var(--space-lg);
+  border-top: 1px solid var(--color-border);
 }
 .section h3 {
   font-size: 1.2rem;
-  margin-bottom: 16px;
-  color: #1e2b39;
+  margin-bottom: var(--space-md);
+  color: var(--color-text);
 }
 .contacts-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-sm);
   align-items: center;
 }
 .contact-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #f4f8f6;
-  padding: 4px 12px;
-  border-radius: 20px;
+  background: var(--color-primary-light);
+  padding: 4px var(--space-sm);
+  border-radius: var(--radius-full);
   font-size: 0.9rem;
 }
 .contact-platform {
   font-weight: 600;
-  color: #2c7a5c;
+  color: var(--color-primary);
 }
 .contact-handle {
-  color: #4a5b6b;
+  color: var(--color-text-secondary);
 }
 .btn-remove {
   background: none;
   border: none;
-  color: #c0392b;
+  color: var(--color-danger);
   font-weight: bold;
   cursor: pointer;
   margin-left: 4px;
 }
 .btn-add-contact {
   background: none;
-  border: 1px dashed #42b983;
-  color: #42b983;
-  padding: 4px 12px;
-  border-radius: 20px;
+  border: 1px dashed var(--color-primary);
+  color: var(--color-primary);
+  padding: 4px var(--space-sm);
+  border-radius: var(--radius-full);
   cursor: pointer;
   font-weight: 500;
 }
@@ -659,38 +677,38 @@ onMounted(loadUser)
 .recent-posts {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 .post-item {
   display: flex;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: #f9fdfb;
-  border-radius: 10px;
-  border: 1px solid #eef3f0;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-primary-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: 0.2s;
+  transition: var(--transition-fast);
 }
 .post-item:hover {
-  background: #f4faf7;
-  border-color: #42b983;
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
 }
 .post-title {
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--color-text);
   flex: 1;
 }
 .post-meta {
   font-size: 0.8rem;
-  color: #888;
-  margin-left: 16px;
+  color: var(--color-text-muted);
+  margin-left: var(--space-md);
   white-space: nowrap;
 }
 
-/* 密码弹窗 */
+/* 弹窗（修改密码、联系方式） */
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
+  inset: 0;
   background: rgba(0,0,0,0.3);
   display: flex;
   justify-content: center;
@@ -699,64 +717,124 @@ onMounted(loadUser)
 }
 .modal-card {
   background: white;
-  padding: 24px;
-  border-radius: 16px;
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
   width: 90%;
   max-width: 400px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-lg);
 }
 .modal-card h4 {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 .modal-card input {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 12px;
+  padding: var(--space-sm);
+  margin-bottom: var(--space-sm);
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 .modal-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
   justify-content: flex-end;
 }
-.error-msg { color: #c0392b; font-size: 0.9rem; margin-top: 8px; }
-
-.empty-hint {
-  color: #999;
+.error-msg {
+  color: var(--color-danger);
   font-size: 0.9rem;
-  padding: 16px 0;
+  margin-top: var(--space-sm);
+}
+
+/* 空状态、加载提示 */
+.empty-hint {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  padding: var(--space-md) 0;
   text-align: center;
 }
 .loading-state {
   text-align: center;
   padding: 60px;
-  color: #aaa;
+  color: var(--color-text-muted);
 }
 
-/* ---- 时间信息样式 ---- */
+/* 时间信息（注册时间 + 最近在线） */
 .time-info {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
-  margin-left: auto;   /* 向右推，覆盖按钮容器内的默认值，也可直接应用于所有.time-info */
 }
 .reg-time {
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
 }
 .last-active {
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
 }
 
-/* 自己查看时的按钮与时间包装容器（保持原有逻辑） */
+/* 按钮与时间信息包装容器（自己查看时） */
 .actions-time-wrapper {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
-  margin-left: auto;   /* 确保靠右 */
+  gap: var(--space-sm);
+  margin-left: auto;
+}
+
+/* 他人查看时时间信息行 */
+.time-info-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  padding: 0 var(--space-lg) var(--space-sm);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* 响应式：小屏下头像和信息垂直排列，按钮全宽 */
+@media (max-width: 768px) {
+  .info-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: -30px;
+  }
+  .avatar-wrapper {
+    margin-right: 0;
+    margin-bottom: var(--space-md);
+  }
+  .basic-info {
+    width: 100%;
+  }
+  .profile-actions,
+  .actions-time-wrapper {
+    margin-left: 0;
+    width: 100%;
+    align-items: center;
+    margin-top: var(--space-md);
+  }
+  .meta-line {
+    justify-content: center;
+  }
+  .time-info {
+    align-items: center;
+  }
+  .section {
+    padding: var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .user-profile {
+    margin: 0 var(--space-xs) 40px;
+  }
+  .cover-section {
+    height: 140px;
+  }
+  .avatar-large {
+    width: 72px;
+    height: 72px;
+  }
 }
 </style>

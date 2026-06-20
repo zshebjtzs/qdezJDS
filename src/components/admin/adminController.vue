@@ -329,21 +329,26 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* =============================================
+   adminController.vue 管理员控制面板样式（应用全局设计令牌）
+   用户管理、板块设置、弹窗、状态显示
+   ============================================= */
+
 .admin-page {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 20px 60px;
+  padding: var(--space-xl) var(--space-lg);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 
 h2 {
   font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 32px;
-  border-left: 6px solid #42b983;
-  padding-left: 16px;
-  color: #1e2b39;
+  margin-bottom: var(--space-xl);
+  border-left: 6px solid var(--color-primary);
+  padding-left: var(--space-md);
+  color: var(--color-text);
 }
 
 .section {
@@ -353,83 +358,77 @@ h2 {
 .section h3 {
   font-size: 1.4rem;
   font-weight: 600;
-  margin-bottom: 20px;
-  color: #1e2b39;
+  margin-bottom: var(--space-lg);
+  color: var(--color-text);
 }
 
 /* 搜索栏 */
 .search-bar {
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);
   align-items: center;
 }
-
 .search-bar input {
   flex: 1;
   max-width: 300px;
-  padding: 8px 14px;
-  border: 1px solid #d9e5df;
-  border-radius: 8px;
+  padding: var(--space-sm) 14px;
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color var(--transition-fast);
 }
-
 .search-bar input:focus {
-  border-color: #42b983;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(66,185,131,0.1);
 }
-
 .search-bar button {
-  padding: 8px 18px;
-  border-radius: 20px;
-  border: 1px solid #d0ddd5;
+  padding: var(--space-sm) 18px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-dark);
   background: #fff;
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--color-text);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-fast);
 }
-
 .search-bar button:hover {
-  border-color: #42b983;
-  color: #42b983;
-  background: #f8fdfa;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
-
 .clear-btn {
-  color: #c0392b;
+  color: var(--color-danger);
   border-color: #ffcccc;
 }
-
 .clear-btn:hover {
-  background: #fff4f4;
-  border-color: #c0392b;
-  color: #c0392b;
+  background: var(--color-danger-light);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 /* 用户网格 */
 .user-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
 .user-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  border: 1px solid #eef3f0;
-  border-radius: 14px;
-  padding: 16px 12px;
+  gap: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-sm);
   background: #fff;
-  transition: box-shadow 0.2s;
+  transition: box-shadow var(--transition-fast);
 }
-
 .user-card:hover {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .user-basic {
@@ -442,162 +441,159 @@ h2 {
 .username {
   font-weight: 600;
   font-size: 1rem;
-  color: #2c3e50;
+  color: var(--color-text);
 }
-
 .banned-mark {
   font-size: 0.8rem;
-  color: #c0392b;
-  background: #fff4f4;
-  padding: 2px 8px;
-  border-radius: 10px;
+  color: var(--color-danger);
+  background: var(--color-danger-light);
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-full);
 }
 
 .user-card button {
-  padding: 6px 16px;
-  border-radius: 18px;
-  border: 1px solid #d0ddd5;
+  padding: 6px var(--space-md);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-dark);
   background: #fff;
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--color-text);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-fast);
 }
-
 .user-card button:hover {
-  background: #f4faf7;
-  border-color: #42b983;
-  color: #42b983;
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* 板块卡片 */
 .category-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-sm);
 }
-
 .category-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
-  background: #f9fdfb;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-primary-bg);
   border: 1px solid rgba(66, 185, 131, 0.15);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   min-width: 200px;
   flex: 1;
 }
-
 .category-card span {
   font-weight: 600;
-  color: #1e2b39;
+  color: var(--color-text);
 }
-
 .category-card button {
   padding: 4px 14px;
-  border-radius: 16px;
-  border: 1px solid #d0ddd5;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-dark);
   background: #fff;
   cursor: pointer;
   font-size: 0.85rem;
-  color: #2c3e50;
-  transition: all 0.2s;
+  color: var(--color-text);
+  transition: var(--transition-fast);
 }
-
 .category-card button:hover {
-  border-color: #42b983;
-  color: #42b983;
-  background: #f4faf7;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 /* 弹窗通用 */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 100;
 }
-
 .modal-card {
   background: white;
-  padding: 28px;
-  border-radius: 18px;
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
-
 .modal-card h4 {
   font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 20px;
-  color: #1e2b39;
+  margin-bottom: var(--space-lg);
+  color: var(--color-text);
 }
 
 /* 权限设置区域 */
 .perm-section {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
   flex-wrap: wrap;
 }
-
 .perm-section label {
   min-width: 90px;
   font-size: 0.9rem;
 }
-
 .perm-section select {
-  padding: 6px 12px;
-  border: 1px solid #d9e5df;
-  border-radius: 8px;
+  padding: 6px var(--space-sm);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   outline: none;
   background: #fff;
 }
-
 .perm-section button {
   padding: 4px 14px;
-  border-radius: 16px;
-  border: 1px solid #d0ddd5;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-dark);
   background: #fff;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition-fast);
 }
-
 .perm-section button:hover {
-  background: #f4faf7;
-  border-color: #42b983;
-  color: #42b983;
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
-/* 弹窗底部按钮 */
+/* 权限状态文字 */
+.status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-right: var(--space-sm);
+}
+.status.normal {
+  color: var(--color-primary);
+}
+.status.banned {
+  color: var(--color-danger);
+}
+
+/* 弹窗底部 */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: var(--space-lg);
 }
 
 .btn-cancel {
-  padding: 8px 20px;
-  border-radius: 20px;
-  border: 1px solid #d0ddd5;
+  padding: var(--space-sm) 20px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-dark);
   background: #f5f5f5;
   color: #555;
   font-weight: 500;
   cursor: pointer;
-  transition: 0.2s;
+  transition: var(--transition-fast);
 }
-
 .btn-cancel:hover {
   background: #e0e0e0;
 }
@@ -607,19 +603,33 @@ h2 {
 .empty {
   text-align: center;
   padding: 40px;
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 0.95rem;
 }
 
-.status {
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-right: 8px;
+/* 移动端：用户网格单列，弹窗全屏 */
+@media (max-width: 768px) {
+  .user-grid {
+    grid-template-columns: 1fr;
+  }
+  .category-card {
+    min-width: 100%;
+  }
+  .modal-card {
+    width: 95%;
+  }
 }
-.status.normal {
-  color: #2c7a5c;
-}
-.status.banned {
-  color: #c0392b;
+
+@media (max-width: 480px) {
+  .search-bar {
+    flex-direction: column;
+  }
+  .search-bar input {
+    max-width: 100%;
+  }
+  .perm-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 </style>

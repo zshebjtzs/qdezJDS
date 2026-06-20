@@ -106,6 +106,11 @@ const formatDate = (iso) => {
 <style scoped>
 @import '@/styles/cloud-common.css';
 
+/* =============================================
+   PrivateCloud 私有网盘独有样式（应用全局设计令牌）
+   搜索框、按钮、头部布局的专属优化
+   ============================================= */
+
 /* 头部调整为允许纵向布局 */
 .header {
   display: block;
@@ -115,28 +120,29 @@ const formatDate = (iso) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-sm);
 }
 
 .header-main h3 {
   margin: 0;
 }
 
-/* 搜索行 */
+/* 搜索行：右对齐，与上传按钮区域保持视觉平衡 */
 .search-row {
   display: flex;
-  justify-content: flex-end;   /* 让搜索框靠右 */
+  justify-content: flex-end;
 }
 
+/* 搜索框：限定宽度，使用全局变量 */
 .search-input {
-  width: 220px;                 /* 限定宽度，避免撑满整行 */
-  padding: 6px 12px;
-  border: 1px solid #d0ddd5;
-  border-radius: 20px;
+  width: 220px;
+  padding: 6px var(--space-sm);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-full);
   font-size: 0.9rem;
-  color: #2c3e50;
+  color: var(--color-text);
   outline: none;
-  transition: border-color 0.25s ease;
+  transition: border-color var(--transition-fast);
 }
 
 .search-input::placeholder {
@@ -144,37 +150,58 @@ const formatDate = (iso) => {
 }
 
 .search-input:focus {
-  border-color: #42b983;
-  box-shadow: 0 0 0 2px rgba(66,185,131,0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(66, 185, 131, 0.1);
 }
 
+/* 搜索结果标题 */
 .search-title {
   font-size: 1rem;
-  color: #42b983;
+  color: var(--color-primary);
   font-weight: 600;
-  margin: 0 0 12px 0;
-  padding-left: 8px;
-  border-left: 3px solid #42b983;
+  margin: 0 0 var(--space-sm) 0;
+  padding-left: var(--space-sm);
+  border-left: 3px solid var(--color-primary);
 }
 
-/* 保留按钮样式（如果需要微调） */
+/* 上传按钮（覆盖公共样式，保持私有网盘独特的渐变按钮） */
 .header-main button {
-  padding: 10px 24px;
-  background: linear-gradient(135deg, #42b983, #2ecc71);
+  padding: 10px var(--space-lg);
+  background: var(--color-primary-gradient);
   color: white;
   border: none;
-  border-radius: 30px;
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 6px 14px rgba(66, 185, 131, 0.3);
-  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: var(--shadow-green);
+  transition: var(--transition-smooth);
   letter-spacing: 0.5px;
 }
 
 .header-main button:hover {
-  background: linear-gradient(135deg, #359b6e, #27ae60);
+  filter: brightness(1.05);
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(66, 185, 131, 0.4);
+}
+
+/* 响应式保护：小屏时允许换行和居中对齐 */
+@media (max-width: 700px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .header-main {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+  .search-row {
+    justify-content: center;
+    margin-top: var(--space-sm);
+  }
+  .search-input {
+    width: 100%;
+  }
 }
 </style>

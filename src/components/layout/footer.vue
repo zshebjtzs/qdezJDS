@@ -32,12 +32,16 @@ const isAdmin = computed(() => {
 </script>
 
 <style scoped>
+/* =============================================
+   Footer 页脚样式（应用全局设计令牌）
+   链接、版权、管理员入口
+   ============================================= */
 .app-footer {
   text-align: center;
-  padding: 24px 0 30px;
+  padding: var(--space-lg) 0 30px;
   margin-top: 60px;
   border-top: 1px solid #eee;
-  color: #8a9aa8;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   letter-spacing: 0.3px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -48,19 +52,19 @@ const isAdmin = computed(() => {
 }
 
 .footer-links a {
-  color: #8a9aa8;
+  color: var(--color-text-muted);
   text-decoration: none;
-  margin: 0 12px;
-  transition: color 0.2s;
+  margin: 0 var(--space-sm);
+  transition: color var(--transition-fast);
 }
 
 .footer-links a:hover {
-  color: #42b983;
+  color: var(--color-primary);
 }
 
 /* 管理员链接专属颜色（紫色） */
 .admin-link {
-  color: purple !important;
+  color: var(--color-info) !important;
   font-weight: 600;
 }
 

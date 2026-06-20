@@ -97,78 +97,91 @@ onMounted(() => fetchUsers())
 </script>
 
 <style scoped>
+/* =============================================
+   userList.vue 用户列表页样式（应用全局设计令牌）
+   搜索栏、用户网格、头像、标签、分页
+   ============================================= */
+
 .user-list-page {
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--space-lg) var(--space-md);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #2c3e50;
+  color: var(--color-text);
 }
+
 h2 {
   font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 24px;
-  border-left: 6px solid #42b983;
-  padding-left: 16px;
+  margin-bottom: var(--space-lg);
+  border-left: 6px solid var(--color-primary);
+  padding-left: var(--space-md);
 }
+
+/* 搜索栏 */
 .search-bar {
   display: flex;
   gap: 10px;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-lg);
 }
 .search-bar input {
   flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #d9e5df;
-  border-radius: 8px;
+  padding: var(--space-sm) var(--space-sm);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
   outline: none;
+  transition: border-color var(--transition-fast);
 }
 .search-bar input:focus {
-  border-color: #42b983;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(66,185,131,0.1);
 }
 .search-bar button {
-  padding: 8px 18px;
-  border-radius: 20px;
-  border: 1px solid #d0ddd5;
+  padding: var(--space-sm) 18px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-dark);
   background: #fff;
   font-weight: 500;
   cursor: pointer;
-  transition: 0.2s;
+  transition: var(--transition-fast);
 }
 .search-bar button:hover {
-  border-color: #42b983;
-  color: #42b983;
-  background: #f8fdfa;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 .clear-btn {
-  color: #c0392b;
+  color: var(--color-danger);
   border-color: #ffcccc;
 }
+
+/* 用户网格 */
 .user-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-md);
 }
 .user-card {
-  width: calc(50% - 8px);
-  border: 1px solid #eef3f0;
-  border-radius: 12px;
-  padding: 12px;
+  width: calc(50% - var(--space-sm));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
   background: #fff;
-  transition: box-shadow 0.2s;
+  transition: box-shadow var(--transition-fast);
 }
 .user-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-sm);
 }
 .user-disabled {
   opacity: 0.6;
   background: #f5f5f5;
 }
+
 .user-link {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
   text-decoration: none;
   color: inherit;
 }
@@ -186,36 +199,61 @@ h2 {
 .username {
   font-weight: 600;
   font-size: 1rem;
-  color: #2c3e50;
+  color: var(--color-text);
 }
 .username-admin {
-  color: purple !important;
+  color: var(--color-info) !important;
 }
 .disabled-mark {
-  color: #c0392b;
+  color: var(--color-danger);
   font-size: 0.8rem;
   margin-left: 4px;
 }
+
+/* 部门标签 */
 .dept-tag {
   font-size: 0.8rem;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: #f0f6f3;
-  color: #2c7a5c;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
   width: fit-content;
   margin-top: 4px;
 }
 .role-external {
   background: #f5f5f5;
-  color: #888;
+  color: var(--color-text-muted);
 }
 .role-admin {
-  background: purple;
+  background: var(--color-info);
   color: white;
 }
-.loading, .empty {
+
+/* 加载与空状态 */
+.loading,
+.empty {
   text-align: center;
-  padding: 40px;
-  color: #999;
+  padding: var(--space-2xl);
+  color: var(--color-text-muted);
+}
+
+/* 移动端：单列布局，头像缩小 */
+@media (max-width: 768px) {
+  .user-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-bar {
+    flex-direction: column;
+  }
+  .search-bar input {
+    max-width: 100%;
+  }
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+  }
 }
 </style>

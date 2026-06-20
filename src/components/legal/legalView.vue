@@ -30,32 +30,36 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* =============================================
+   legalView 法律文本页样式（应用全局设计令牌）
+   保留原有 Markdown 渲染样式，升级颜色与间距
+   ============================================= */
 .legal-page {
   max-width: 860px;
   margin: 0 auto;
-  padding: 24px 20px 60px;
+  padding: var(--space-lg) var(--space-md) 60px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #2c3e50;
+  color: var(--color-text);
   line-height: 1.8;
 }
 
 /* 保证渲染后的 markdown 样式美观，复用全局链接颜色等 */
 .legal-content :deep(a) {
-  color: #42b983;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 .legal-content :deep(h1) {
   font-size: 2rem;
-  border-bottom: 2px solid #42b983;
-  padding-bottom: 8px;
-  margin-bottom: 24px;
+  border-bottom: 2px solid var(--color-primary);
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-lg);
 }
 .legal-content :deep(h2) {
   font-size: 1.5rem;
-  margin-top: 28px;
-  margin-bottom: 12px;
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-sm);
 }
 .legal-content :deep(p) {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-md);
 }
 </style>

@@ -86,59 +86,122 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
+/* =============================================
+   LoginPage 样式（应用全局设计令牌）
+   卡片居中、输入框优化、品牌按钮、过渡动画
+   ============================================= */
+
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: linear-gradient(135deg, var(--color-bg-page) 0%, var(--color-primary-light) 100%);
+  padding: var(--space-md);
 }
+
 .login-card {
   width: 100%;
-  max-width: 400px;
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  max-width: 420px;
+  padding: var(--space-2xl) var(--space-xl);
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition-smooth);
 }
+
+.login-card:hover {
+  box-shadow: 0 12px 30px rgba(66, 185, 131, 0.12);
+}
+
+.login-card h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-lg);
+  text-align: center;
+  border-left: none;
+  padding-left: 0;
+}
+
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-lg);
 }
+
 label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-}
-input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-}
-button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-.error {
-  color: red;
-  margin-top: 1rem;
+  margin-bottom: var(--space-xs);
+  font-weight: 600;
+  color: var(--color-text);
   font-size: 0.9rem;
 }
-.info {
-  margin-top: 1rem;
-  font-size: 0.8rem;
-  color: #666;
+
+input {
+  width: 100%;
+  padding: 12px var(--space-md);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  color: var(--color-text);
+  background: #fff;
+  outline: none;
+  transition: var(--transition-fast);
+  box-sizing: border-box;
+}
+
+input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
+}
+
+input::placeholder {
+  color: #aaa;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: var(--space-sm);
+  background: var(--color-primary-gradient);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-green);
+  transition: var(--transition-smooth);
+  letter-spacing: 0.5px;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(66, 185, 131, 0.4);
+}
+
+button:disabled {
+  background: #ccc;
+  color: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.error {
+  color: var(--color-danger);
+  margin-top: var(--space-md);
+  font-size: 0.9rem;
   text-align: center;
+  padding: var(--space-sm);
+  background: var(--color-danger-light);
+  border-radius: var(--radius-sm);
+}
+
+.info {
+  margin-top: var(--space-md);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  line-height: 1.6;
 }
 </style>
