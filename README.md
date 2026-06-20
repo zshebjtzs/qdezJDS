@@ -90,7 +90,7 @@
 
 ## 项目结构
 
-
+```
 qdezJDS/
 ├── index.html                 # Vue 入口 HTML
 ├── package.json               # 前端依赖
@@ -116,7 +116,7 @@ qdezJDS/
 │   ├── db/                    # 数据库初始化 SQL 脚本
 │   └── uploads/               # 文件存储目录（自动创建）
 └── .gitignore
-
+```
 
 ---
 
@@ -377,7 +377,7 @@ Content-Type: application/json
 
 ### 环境变量参考（生产环境）
 
-
+```env
 NODE_ENV=production
 PORT=3001
 JWT_SECRET=production_grade_secret_key
@@ -385,7 +385,7 @@ DB_HOST=your_db_host
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_NAME=qdez_JDS_db
-
+```
 
 > 务必启用 HTTPS 并设置安全的 Cookie 策略。
 
