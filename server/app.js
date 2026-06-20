@@ -30,8 +30,14 @@ const __dirname = path.dirname(__filename);
 // 全局中间件
 app.use(helmet({
   crossOriginResourcePolicy: false,
-}));                            // 安全头
-app.use(cors());                                 // 允许跨域（开发环境可配置具体域名）
+}));  
+
+app.use(cors({ // 生产环境限制允许的域名
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://xxx.com', 'https://www.xxx.com']
+    : true
+}));        
+
 app.use(express.json());                         // 解析 JSON 请求体
 app.use(express.urlencoded({ extended: true })); // 解析 URL-encoded
 app.use(morgan('dev'));                          // 日志输出
