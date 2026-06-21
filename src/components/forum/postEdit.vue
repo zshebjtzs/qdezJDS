@@ -12,7 +12,7 @@
     </div>
     <div class="form-actions">
       <button @click="submitPost" class="submit-btn">提交</button>
-      <router-link :to="`/forum/${slug}`" class="cancel-btn">取消</router-link>
+      <a href="#" @click.prevent="handleCancel" class="cancel-btn">取消</a>
     </div>
     <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>
     <!-- Markdown 语法速查面板 -->
@@ -101,10 +101,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { createPost,getCategories } from '@/api/forum'
+import { createPost } from '@/api/forum'
 import MarkdownEditor from '@/markdown/editor.vue'
 
 const route = useRoute()
@@ -114,16 +114,52 @@ const slug = route.params.slug
 const newTitle = ref('')
 const newContent = ref('')
 const categories = ref([])
+const isSubmitting = ref(false)
 const categoryName = computed(() => {
   const cat = categories.value.find(c => c.slug === slug)
   return cat ? cat.name : slug
 })
 const errorMsg = ref('')
 
-onMounted(async () => {
-  try {
-    categories.value = await getCategories()
-  } catch (err) { /* 忽略错误，保留 slug 兜底 */ }
+// 判断是否有未保存内容
+const hasContent = computed(() => {
+  return newTitle.value.trim() !== '' || newContent.value.trim() !== ''
+})
+
+// 处理取消操作（按钮点击）
+const handleCancel = () => {
+  // 直接跳转，由路由守卫统一负责离开确认
+  router.push(`/forum/${slug}`)
+}
+
+// 路由离开守卫
+onBeforeRouteLeave((to, from, next) => {
+  // 正在提交或没有内容时直接放行
+  if (isSubmitting.value || !hasContent.value) {
+    next()
+  } else {
+    const answer = confirm('确定要离开吗？所有输入均不会被保存。')
+    if (answer) {
+      next()
+    } else {
+      next(false)
+    }
+  }
+})
+
+// 浏览器关闭/刷新拦截
+const beforeUnloadHandler = (e) => {
+  if (hasContent.value) {
+    e.preventDefault()
+    e.returnValue = '' // 触发浏览器默认提示
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', beforeUnloadHandler)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', beforeUnloadHandler)
 })
 
 const submitPost = async () => {
@@ -134,6 +170,10 @@ const submitPost = async () => {
   }
   try {
     await createPost(slug, newTitle.value, newContent.value)
+    // 标记为正在提交，并清空内容，绕过守卫
+    isSubmitting.value = true
+    newTitle.value = ''
+    newContent.value = ''
     router.push(`/forum/${slug}`)
   } catch (err) {
     errorMsg.value = '发帖失败，请重试'
