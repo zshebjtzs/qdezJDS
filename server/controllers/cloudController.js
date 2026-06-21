@@ -92,8 +92,11 @@ export const uploadFile = (req, res, next) => {
 
 export const getPrivateList = async (req, res, next) => {
   try {
-    const files = await getPrivateFiles(req.user.id);
-    res.json(files);
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 20;
+    const q = req.query.q || '';
+    const result = await getPrivateFiles(req.user.id, page, pageSize, q);
+    res.json(result);
   } catch (err) {
     next(err);
   }
@@ -105,8 +108,11 @@ export const getPublicList = async (req, res, next) => {
     if (!['art', 'mech', 'soft'].includes(department)) {
       return res.status(400).json({ error: '无效的部门' });
     }
-    const files = await getPublicFiles(department);
-    res.json(files);
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 20;
+    const q = req.query.q || '';
+    const result = await getPublicFiles(department, page, pageSize, q);
+    res.json(result);
   } catch (err) {
     next(err);
   }
