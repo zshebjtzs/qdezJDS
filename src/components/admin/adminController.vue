@@ -273,23 +273,38 @@ const removeBan = async (type) => {
 
 // 授予版主
 const grantMod = async () => {
-  if (!userPanel.modCategoryId) return
+  if (!userPanel.modCategoryId) return;
   try {
-    await request.post('/admin/grant-mod', { userId: userPanel.user.id, categoryId: userPanel.modCategoryId })
-    alert('授予成功')
-    userPanel.visible = false
-  } catch (err) { alert('操作失败') }
-}
+    await request.post('/admin/grant-mod', { 
+      userId: userPanel.user.id, 
+      categoryId: userPanel.modCategoryId 
+    });
+    alert('授予成功');
+    userPanel.visible = false;
+    fetchUsers(currentPage.value);
+  } catch (err) {
+    // 处理后端返回的具体错误信息
+    const msg = err.response?.data?.error || '操作失败';
+    alert(msg);
+  }
+};
 
 // 撤销版主
 const revokeMod = async () => {
-  if (!userPanel.modCategoryId) return
+  if (!userPanel.modCategoryId) return;
   try {
-    await request.post('/admin/revoke-mod', { userId: userPanel.user.id, categoryId: userPanel.modCategoryId })
-    alert('撤销成功')
-    userPanel.visible = false
-  } catch (err) { alert('操作失败') }
-}
+    await request.post('/admin/revoke-mod', { 
+      userId: userPanel.user.id, 
+      categoryId: userPanel.modCategoryId 
+    });
+    alert('撤销成功');
+    userPanel.visible = false;
+    fetchUsers(currentPage.value);
+  } catch (err) {
+    const msg = err.response?.data?.error || '操作失败';
+    alert(msg);
+  }
+};
 
 // 板块封禁弹窗（简化处理，后续可细化）
 const categoryPanel = reactive({

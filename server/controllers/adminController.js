@@ -1,5 +1,6 @@
 // server/controllers/adminController.js
 import * as adminService from '../services/adminService.js';
+import pool from '../config/db.js';
 
 // 用户列表（分页+搜索）
 export const listUsers = async (req, res, next) => {
@@ -55,6 +56,13 @@ export const unbanUser = async (req, res, next) => {
 export const grantModerator = async (req, res, next) => {
   try {
     const { userId, categoryId } = req.body;
+    // 检查是否已是版主
+    const isAlreadyMod = await adminService.isModeratorInCategory(userId, categoryId);
+    if (isAlreadyMod) {
+      const [category] = await pool.query('SELECT name FROM categories WHERE id = ?', [categoryId]);
+      const categoryName = category[0]?.name || '该板块';
+      return res.status(400).json({ error: `该用户已经是「${categoryName}」的版主` });
+    }
     await adminService.grantModerator(userId, categoryId);
     res.json({ message: '版主授予成功' });
   } catch (err) {

@@ -26,3 +26,6 @@ Thumbs.db
 *~
 .vscode/
 .idea/
+
+# 本地测试的api文档
+test-api.http

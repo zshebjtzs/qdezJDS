@@ -85,7 +85,7 @@ export const getRecentPostsByUserId = async (userId, limit = 4) => {
        p.id, p.title, p.view_count AS viewCount,
        p.created_at AS createdAt,
        c.slug AS categorySlug,
-       (SELECT COUNT(*) FROM replies WHERE post_id = p.id) AS replyCount
+       (SELECT COUNT(*) FROM comments WHERE comments.post_id = p.id) AS replyCount
      FROM posts p
      LEFT JOIN categories c ON p.category_id = c.id
      WHERE p.user_id = ?

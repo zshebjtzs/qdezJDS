@@ -1,0 +1,362 @@
+# =============================================
+# API 测试用例
+# 适用于 VS Code REST Client 插件
+# 使用方法：点击每个请求上方的 "Send Request"
+# =============================================
+
+# -------------------- 全局变量 --------------------
+# 请手动替换 <token> 为实际登录后获取的 JWT 令牌
+# 替换 <uid> 为具体用户 uid
+
+### --------------------------------------------------
+### 健康检查
+### --------------------------------------------------
+GET http://localhost:3001/api/health
+
+
+### ==================================================
+### 认证模块
+### ==================================================
+
+### 用户注册（需管理员权限，测试环境可由管理员手动执行）
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "password": "SecurePass123!",
+  "department": "soft",
+  "role": "internal"
+}
+
+### 用户登录（成功后会返回 token，请复制到上方变量）
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "administrator",
+  "password": "qdezJDS"
+}
+
+
+### ==================================================
+### 用户模块（需要认证，在 Header 中替换 token）
+### ==================================================
+
+### 查看自己的完整信息
+GET http://localhost:3001/api/user/me/profile
+Authorization: Bearer <token>
+
+### 查看他人的公开信息（替换 <uid>）
+GET http://localhost:3001/api/user/<uid>
+Authorization: Bearer <token>
+
+### 修改用户名（3天冷却）
+PATCH http://localhost:3001/api/user/me/username
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "newUsername": "newname123"
+}
+
+### 修改密码
+PATCH http://localhost:3001/api/user/me/password
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "oldPassword": "SecurePass123!",
+  "newPassword": "NewSecurePass456!"
+}
+
+### 修改个人资料（简介、真实姓名、主题色、联系方式）
+PATCH http://localhost:3001/api/user/me/profile
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "real_name": "张三",
+  "bio": "热爱机械设计",
+  "theme_color": "#ff6600",
+  "contacts": [
+    { "platform": "QQ", "handle": "123456" },
+    { "platform": "微信", "handle": "wxid_test" }
+  ]
+}
+
+### 上传头像（需要 multipart/form-data）
+POST http://localhost:3001/api/user/me/avatar
+Authorization: Bearer <token>
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="avatar"; filename="avatar.jpg"
+Content-Type: image/jpeg
+
+< /path/to/your/avatar.jpg
+------WebKitFormBoundary--
+
+### 上传背景图
+POST http://localhost:3001/api/user/me/cover
+Authorization: Bearer <token>
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="cover"; filename="cover.jpg"
+Content-Type: image/jpeg
+
+< /path/to/your/cover.jpg
+------WebKitFormBoundary--
+
+### 获取某用户最近帖子（替换 <uid>）
+GET http://localhost:3001/api/user/<uid>/posts?limit=4
+Authorization: Bearer <token>
+
+### 获取当前用户的封禁状态
+GET http://localhost:3001/api/user/me/bans
+Authorization: Bearer <token>
+
+
+### ==================================================
+### 论坛模块
+### ==================================================
+
+### 获取所有板块列表
+GET http://localhost:3001/api/forum/categories
+Authorization: Bearer <token>
+
+### 获取某个板块的帖子列表（分页，替换 slug）
+GET http://localhost:3001/api/forum/announcements/posts?page=1&pageSize=10&sortBy=time
+Authorization: Bearer <token>
+
+### 按热度排序帖子
+GET http://localhost:3001/api/forum/general/posts?sortBy=hot
+Authorization: Bearer <token>
+
+### 获取帖子详情（替换 slug 和 postId）
+GET http://localhost:3001/api/forum/announcements/posts/1
+Authorization: Bearer <token>
+
+### 发布新帖（在指定板块下，替换 slug）
+POST http://localhost:3001/api/forum/announcements/posts
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "title": "测试帖子标题",
+  "content": "这是一篇 **Markdown** 格式的测试帖子，支持数学公式 $E=mc^2$。"
+}
+
+### 修改帖子权限（管理员/版主，替换 slug 和 postId）
+PATCH http://localhost:3001/api/forum/announcements/posts/1/permission
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "field": "can_reply",
+  "value": false
+}
+
+### 删除帖子（作者/管理员/版主）
+DELETE http://localhost:3001/api/forum/announcements/posts/1
+Authorization: Bearer <token>
+
+### ---------- 评论与回复 ----------
+
+### 获取帖子的评论列表（分页，替换 slug 和 postId）
+GET http://localhost:3001/api/forum/announcements/posts/1/comments?page=1&pageSize=10
+Authorization: Bearer <token>
+
+### 发表评论
+POST http://localhost:3001/api/forum/announcements/posts/1/comments
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "content": "这篇帖子写得很好！"
+}
+
+### 获取某个评论的回复列表（分页，替换 commentId）
+GET http://localhost:3001/api/forum/comments/1/replies?page=1&pageSize=10
+Authorization: Bearer <token>
+
+### 发表回复（直接回复评论）
+POST http://localhost:3001/api/forum/comments/1/replies
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "content": "同意你的观点",
+  "replyToUserId": 2,
+  "parentReplyId": null
+}
+
+### 发表对回复的回复（二级回复，parentReplyId 为被回复的回复ID）
+POST http://localhost:3001/api/forum/comments/1/replies
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "content": "回复 @testuser1：你说得对",
+  "replyToUserId": 3,
+  "parentReplyId": 1
+}
+
+### 删除评论（作者/管理员/版主，替换 slug 和 commentId）
+DELETE http://localhost:3001/api/forum/comments/1
+Authorization: Bearer <token>
+
+### 删除回复（作者/管理员/版主，替换 slug 和 replyId）
+DELETE http://localhost:3001/api/forum/replies/1
+Authorization: Bearer <token>
+
+### 获取板块禁言状态
+GET http://localhost:3001/api/forum/category/1/ban-status
+Authorization: Bearer <token>
+
+
+### ==================================================
+### 网盘模块
+### ==================================================
+
+### 获取私有网盘文件列表
+GET http://localhost:3001/api/cloud/private
+Authorization: Bearer <token>
+
+### 上传私有文件
+POST http://localhost:3001/api/cloud/private
+Authorization: Bearer <token>
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< /path/to/your/file.pdf
+------WebKitFormBoundary
+Content-Disposition: form-data; name="type"
+
+private
+------WebKitFormBoundary--
+
+### 下载私有文件（替换 fileId）
+GET http://localhost:3001/api/cloud/private/1/download
+Authorization: Bearer <token>
+
+### 删除私有文件（替换 fileId）
+DELETE http://localhost:3001/api/cloud/private/1
+Authorization: Bearer <token>
+
+### 获取公共网盘文件列表（按部门，替换 department：art/mech/soft）
+GET http://localhost:3001/api/cloud/public/art
+Authorization: Bearer <token>
+
+### 上传公共文件（替换 department）
+POST http://localhost:3001/api/cloud/public
+Authorization: Bearer <token>
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="design.png"
+Content-Type: image/png
+
+< /path/to/your/design.png
+------WebKitFormBoundary
+Content-Disposition: form-data; name="type"
+
+public
+------WebKitFormBoundary
+Content-Disposition: form-data; name="department"
+
+art
+------WebKitFormBoundary--
+
+### 下载公共文件（替换 fileId）
+GET http://localhost:3001/api/cloud/public/1/download
+Authorization: Bearer <token>
+
+### 删除公共文件（替换 fileId）
+DELETE http://localhost:3001/api/cloud/public/1
+Authorization: Bearer <token>
+
+
+### ==================================================
+### 管理员模块（需管理员 token）
+### ==================================================
+
+### 获取用户列表（搜索、分页）
+GET http://localhost:3001/api/admin/users?page=1&pageSize=20&q=test
+Authorization: Bearer <token>
+
+### 获取板块列表
+GET http://localhost:3001/api/admin/categories
+Authorization: Bearer <token>
+
+### 封禁用户（禁止发帖1小时）
+POST http://localhost:3001/api/admin/ban
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "userId": 2,
+  "type": "post",
+  "duration": "1h"
+}
+
+### 永久禁止用户使用网盘
+POST http://localhost:3001/api/admin/ban
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "userId": 2,
+  "type": "cloud",
+  "duration": null
+}
+
+### 解封用户（解禁发帖）
+POST http://localhost:3001/api/admin/unban
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "userId": 2,
+  "type": "post"
+}
+
+### 授予版主（userId 和 categoryId 替换为实际值）
+POST http://localhost:3001/api/admin/grant-mod
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "userId": 2,
+  "categoryId": 1
+}
+
+### 撤销版主
+POST http://localhost:3001/api/admin/revoke-mod
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "userId": 2,
+  "categoryId": 1
+}
+
+### 获取单个用户的封禁详情
+GET http://localhost:3001/api/admin/user/2/bans
+Authorization: Bearer <token>
+
+### 设置板块禁言（categoryId 为板块ID）
+POST http://localhost:3001/api/admin/category/1/ban
+Authorization: Bearer <token>
+
+### 解除板块禁言
+DELETE http://localhost:3001/api/admin/category/1/ban
+Authorization: Bearer <token>
+
+### 获取板块禁言状态
+GET http://localhost:3001/api/admin/category/1/ban-status
+Authorization: Bearer <token>
