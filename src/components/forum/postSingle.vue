@@ -10,6 +10,7 @@
       <span class="dept-tag" :class="{ 'external-dept': isExternal(post) }">{{ displayDept(post) }}</span>
       <span>{{ formatDate(post.createdAt) }}</span>
       <span>浏览: {{ post.viewCount }}</span>
+      <router-link :to="`/forum/${slug}`" class="btn-back">← 返回帖子列表</router-link>
     </div>
     <div class="content" v-html="renderMarkdown(post.content)"></div>
 
@@ -855,6 +856,36 @@ hr {
   text-align: center;
   padding: var(--space-2xl);
   color: var(--color-text-muted);
+}
+
+.author-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+.btn-back {
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-full);
+  background: #fff;
+  transition: var(--transition-fast);
+  font-weight: 500;
+  margin-left: auto; /* 推到最右侧 */
+  white-space: nowrap;
+}
+.btn-back:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* 响应式优化 */

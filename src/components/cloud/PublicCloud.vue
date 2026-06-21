@@ -51,8 +51,8 @@
           <button v-if="canDelete(file)" @click="deleteFile(file.id)">删除</button>
         </div>
       </div>
-      <div v-if="store.privateFiles.length === 0 && isSearching" class="empty">找不到对应的文件</div>
-      <div v-else-if="store.privateFiles.length === 0 && !isSearching" class="empty">暂无文件，请上传</div>
+      <div v-if="store.publicFiles.length === 0 && isSearching" class="empty">找不到对应的文件</div>
+      <div v-else-if="store.publicFiles.length === 0 && !isSearching" class="empty">暂无文件，请上传</div>
     </div>
 
     <Pagination

@@ -27,7 +27,7 @@ export const getPostsByCategory = async (categoryId, userId = null, page = 1, pa
   // 排序
   let orderClause;
   if (sortBy === 'hot') {
-    orderClause = `ORDER BY (commentCount * 5 + viewCount) DESC, created_at DESC`;
+    orderClause = `ORDER BY (commentCount * 5 + viewCount) DESC, p.created_at DESC`;
   } else {
     orderClause = `ORDER BY p.created_at DESC`;
   }

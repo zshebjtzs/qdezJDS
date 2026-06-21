@@ -6,6 +6,7 @@
       <button @click="changeSort('time')" :class="{ active: sortMode === 'time' }">按时间</button>
       <button @click="changeSort('hot')" :class="{ active: sortMode === 'hot' }">按热度</button>
       <router-link v-if="canPost" :to="`/forum/${slug}/new`" class="new-post-link">发新帖</router-link>
+      <router-link to="/forum" class="btn-back">← 返回板块列表</router-link>
     </div>
 
     <div v-if="loading" class="loading-state">加载中...</div>
@@ -214,6 +215,12 @@ h2 {
   color: #fff;
   border: none;
   box-shadow: var(--shadow-green);
+  padding: var(--space-sm) 18px;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-block;
+  transition: var(--transition-fast);
 }
 
 .new-post-link:hover {
@@ -324,6 +331,50 @@ h2 {
   padding: var(--space-2xl);
   color: var(--color-text-muted);
   font-size: 1rem;
+}
+
+/* 头部容器：标题 + 操作栏 */
+.post-list-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+/* 标题重置边距 */
+.post-list-header h2 {
+  margin-bottom: 0;
+}
+
+/* 操作栏（排序、发帖、返回） */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+
+/* 返回按钮样式 */
+.btn-back {
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-full);
+  background: #fff;
+  transition: var(--transition-fast);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.btn-back:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* 移动端适配 */
