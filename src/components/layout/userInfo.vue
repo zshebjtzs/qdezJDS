@@ -84,7 +84,7 @@
       <div class="recent-posts">
         <div v-for="post in recentPosts" :key="post.id" class="post-item" @click="goToPost(post)">
           <span class="post-title">{{ post.title }}</span>
-          <span class="post-meta">{{ post.replyCount }}回复 · {{ post.viewCount }}浏览</span>
+          <span class="post-meta">{{ formatPostTime(post.createdAt) }} · {{ post.replyCount }}回复 · {{ post.viewCount }}浏览</span>
         </div>
         <div v-if="recentPosts.length === 0" class="empty-hint">暂无帖子</div>
       </div>
@@ -423,6 +423,17 @@ const formatDateTime = (iso) => {
   const hour = d.getHours().toString().padStart(2, '0')
   const minute = d.getMinutes().toString().padStart(2, '0')
   return `${year}年${month}月${day}日 ${hour}:${minute}`
+}
+
+const formatPostTime = (iso) => {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const year = d.getFullYear()
+  const month = (d.getMonth() + 1).toString().padStart(2, '0')
+  const day = d.getDate().toString().padStart(2, '0')
+  const hour = d.getHours().toString().padStart(2, '0')
+  const minute = d.getMinutes().toString().padStart(2, '0')
+  return `${year}-${month}-${day} ${hour}:${minute}`
 }
 
 // 监听路由参数变化，当 uid 改变时重新加载用户信息
