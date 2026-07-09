@@ -1,6 +1,6 @@
 ---
 name: skills
-description: 青岛二中机电社网站全栈开发技能。Vue 3 + Express + MySQL 技术栈，涵盖论坛板块化评论系统、网盘分页搜索、用户权限管理、管理员面板等模块。每次修改代码时必须遵守保留原有注释、不擅自重构 script、前端计算后端运输等铁律。
+description: 青岛二中机电社网站全栈开发技能。Vue 3 + Nodejs + MySQL 技术栈，涵盖论坛板块化评论系统、网盘分页搜索、用户权限管理、管理员面板等模块。每次修改代码时必须遵守保留原有注释、不擅自重构 script、前端计算后端运输等铁律。
 ---
 
 # 青岛二中机电社网站 - AI 开发技能与铁律
@@ -229,11 +229,146 @@ qdezJDS/
 
 ## 8. 重要文件索引
 
-- 数据库初始化脚本：`server/db/init.sql`
-- API 测试用例：`test-api.http`
-- 全局 CSS 变量：`src/styles/variables.css`
-- 全局组件样式：`src/styles/components.css`
-- 网盘公共样式：`src/styles/cloud-common.css`
-- 分页组件：`src/components/common/Pagination.vue`
-- 用户信息页：`src/components/layout/userInfo.vue`
-- 管理员面板：`src/components/admin/adminController.vue`
+> Agent 注意：接到开发任务后，先根据任务类型在下方找到对应模块，再打开相关文件。  
+> 不要盲目全局搜索，优先查阅这里的索引。
+
+### 8.1 全局基础
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `src/main.js` | 前端入口，注册 Pinia、Router、全局样式 | 调试路由/状态/样式问题时 |
+| `src/App.vue` | 根组件，动态布局切换 | 修改全局布局时 |
+| `server/app.js` | Express 入口，中间件注册，路由挂载 | 新增路由/中间件/修改启动端口 |
+| `server/config/db.js` | MySQL 连接池配置 | 数据库连接问题时 |
+| `server/config/paths.js` | 项目根目录路径工具 | 文件操作路径问题时 |
+| `server/.env` | 后端环境变量（不提交 Git） | 修改端口/JWT密钥/数据库凭据 |
+| `.gitignore` | Git 忽略规则 | **未经用户允许禁止修改！** |
+| `src/styles/variables.css` | 全局 CSS 设计令牌（颜色、间距、圆角、阴影） | 任何样式修改前必读 |
+| `src/styles/components.css` | 全局公共组件类（`.btn-primary`、`.card`、`.modal-overlay` 等） | 复用或新增全局样式时 |
+| `src/styles/cloud-common.css` | 网盘私有/公共组件共享样式 | 修改网盘样式时 |
+| `server/db/init.sql` | 数据库初始化脚本（含所有建表语句和默认数据） | 数据库结构变更/新建表/排查字段名 |
+| `test-api.http` | API 测试用例（REST Client） | 调试接口/查看参数格式 |
+| `skills/SKILL.md` | **本文件，AI 开发最高准则** | 每次对话必读 |
+| `skills/references/database-schema.md` | 数据库表结构速查 | 编写 SQL 前 |
+| `skills/references/api-endpoints.md` | 全部 API 端点速查 | 修改前后端接口前 |
+| `skills/references/database-operations.md` | 数据库操作命令模板 | 执行数据库变更前 |
+| `skills/references/common-errors.md` | 常见错误修复指南 | 遇到报错时 |
+
+### 8.2 前端核心
+
+#### 8.2.1 布局与导航
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `src/components/layout/MainLayout.vue` | 全局导航栏（含头像、用户名、角色颜色、退出） | 修改导航栏/角色颜色/用户信息显示 |
+| `src/components/layout/footer.vue` | 全局页脚（使用条款、隐私政策、用户列表、权限管理入口） | 修改页脚链接 |
+| `src/components/layout/userInfo.vue` | 用户信息页（双模式：自己编辑/他人查看） | 修改个人信息/头像/背景/联系方式/最近帖子 |
+
+#### 8.2.2 论坛模块
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `src/views/ForumPage.vue` | 论坛根页面，板块列表 + 内外切换 | 修改板块列表/切换逻辑 |
+| `src/components/forum/postList.vue` | 帖子列表（分页、排序、发帖入口、返回） | 修改帖子列表/排序/分页/发帖入口 |
+| `src/components/forum/postSingle.vue` | 帖子详情（评论树、回复弹窗、权限管理、删除） | 修改评论/回复/权限/删除逻辑 |
+| `src/components/forum/postEdit.vue` | 发帖页（Vditor 编辑器、Markdown 帮助、离开确认） | 修改发帖流程/编辑器配置 |
+| `src/markdown/editor.vue` | Vditor 编辑器封装组件 | 修改编辑器配置/工具栏/上传 |
+| `src/markdown/renderer.js` | Markdown + LaTeX 安全渲染（DOMPurify + KaTeX） | 修改渲染逻辑/安全策略 |
+
+#### 8.2.3 网盘模块
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `src/views/CloudPage.vue` | 网盘根页面，选项卡切换 | 修改选项卡/封禁拦截 |
+| `src/components/cloud/PrivateCloud.vue` | 私有网盘（分页、搜索、上传、下载、删除、高亮） | 修改私有网盘功能 |
+| `src/components/cloud/PublicCloud.vue` | 公共网盘（部门切换、分页、搜索、上传、下载、删除、高亮） | 修改公共网盘功能 |
+
+#### 8.2.4 用户与管理员
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `src/views/LoginPage.vue` | 登录页（表单、验证码预留、封禁检查） | 修改登录流程 |
+| `src/components/layout/userList.vue` | 用户列表（搜索、分页） | 修改用户列表 |
+| `src/components/admin/adminController.vue` | 管理员控制面板（用户管理、封禁、版主授予、板块禁言） | 修改管理员功能 |
+
+#### 8.2.5 公共主页
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `src/views/HomePage.vue` | 首页（Hero 区、过期提示弹窗） | 修改首页展示/提示弹窗 |
+| `src/components/publicHome/About.vue` | 社团介绍页 | 修改介绍内容 |
+| `src/components/publicHome/Activity.vue` | 社团活动页 | 修改活动展示 |
+
+#### 8.2.6 通用组件与工具
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `src/components/common/Pagination.vue` | 通用分页组件 | 修改分页逻辑/样式 |
+| `src/stores/user.js` | 用户状态管理（登录态、封禁态、头像时间戳） | 修改用户状态/封禁检查 |
+| `src/stores/cloud.js` | 网盘状态管理（私有/公共文件、分页状态） | 修改网盘数据流 |
+| `src/api/request.js` | Axios 实例（拦截器、JWT 携带、401 退出） | 修改 HTTP 拦截逻辑 |
+| `src/api/forum.js` | 论坛相关 API 封装 | 新增/修改论坛接口调用 |
+| `src/api/cloud.js` | 网盘相关 API 封装 | 新增/修改网盘接口调用 |
+| `src/api/auth.js` | 认证相关 API 封装 | 修改登录/注册接口 |
+| `src/router/index.js` | 路由配置 + 导航守卫（权限检查、封禁刷新） | 新增路由/修改权限 |
+| `src/utils/passwordValidator.js` | 密码强度校验 | 修改密码规则 |
+
+#### 8.2.7 其他页面
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `src/views/NotFound.vue` | 404 页面 | 修改 404 展示 |
+| `src/components/legal/legalView.vue` | 使用条款/隐私政策展示 | 修改法律文本展示 |
+| `src/assets/legals/terms.md` | 使用条款原文 | 修改条款内容 |
+| `src/assets/legals/privacy.md` | 隐私政策原文 | 修改隐私政策内容 |
+
+### 8.3 后端核心
+
+#### 8.3.1 控制器
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `server/controllers/authController.js` | 注册、登录（含极验验证） | 修改认证逻辑 |
+| `server/controllers/forumController.js` | 帖子、评论、回复、板块禁言 | 修改论坛逻辑 |
+| `server/controllers/cloudController.js` | 网盘文件 CRUD | 修改网盘逻辑 |
+| `server/controllers/userController.js` | 个人信息、修改密码、头像/背景上传、最近帖子 | 修改用户逻辑 |
+| `server/controllers/adminController.js` | 封禁/解封、版主授予/撤销、板块禁言 | 修改管理员逻辑 |
+
+#### 8.3.2 服务层
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `server/services/forumService.js` | 帖子 CRUD、分页、排序 | 修改论坛数据库操作 |
+| `server/services/commentService.js` | 评论 CRUD | 修改评论数据库操作 |
+| `server/services/replyService.js` | 回复 CRUD | 修改回复数据库操作 |
+| `server/services/cloudService.js` | 网盘文件 CRUD、搜索、高亮计算 | 修改网盘数据库操作 |
+| `server/services/userService.js` | 用户 CRUD、活跃时间更新 | 修改用户数据库操作 |
+| `server/services/adminService.js` | 封禁记录、版主管理 | 修改管理员数据库操作 |
+| `server/services/moderatorService.js` | 版主查询与权限判断 | 修改版主逻辑 |
+
+#### 8.3.3 中间件
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `server/middlewares/authMiddleware.js` | JWT 验证 + 活跃时间更新 | 修改认证逻辑 |
+| `server/middlewares/errorHandler.js` | 全局错误处理 | 修改错误返回格式 |
+| `server/middlewares/upload.js` | Multer 配置（网盘、头像、背景） | 修改上传限制/文件过滤 |
+
+#### 8.3.4 路由
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `server/routes/auth.js` | 认证路由 | 新增认证接口 |
+| `server/routes/forum.js` | 论坛路由 | 新增论坛接口 |
+| `server/routes/cloud.js` | 网盘路由 | 新增网盘接口 |
+| `server/routes/user.js` | 用户路由 | 新增用户接口 |
+| `server/routes/admin.js` | 管理员路由 | 新增管理员接口 |
+
+#### 8.3.5 工具
+
+| 文件 | 用途 | 何时查看 |
+|------|------|----------|
+| `server/utils/jwt.js` | JWT 生成与验证 | 修改 Token 逻辑 |
+| `server/utils/bcrypt.js` | 密码哈希与比对 | 修改密码加密逻辑 |
+| `server/utils/pagination.js` | 通用分页工具 | 修改分页返回格式 |
+| `server/utils/encoding.js` | 中文文件名转码 | 修改文件编码处理 |
