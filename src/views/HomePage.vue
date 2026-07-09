@@ -86,7 +86,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .logo {
@@ -123,7 +123,7 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
   box-shadow: 0 15px 30px -10px rgba(66, 185, 131, 0.1);
-  border: 1px solid rgba(66, 185, 131, 0.15);
+  border: 1px solid var(--color-border);
   transition: box-shadow var(--transition-fast);
 }
 
@@ -151,15 +151,15 @@ onMounted(() => {
 .hero-badge {
   display: inline-block;
   padding: 6px var(--space-md);
-  background: rgba(66, 185, 131, 0.12);
-  color: #2c7a5c;
-  border-radius: 40px;
+  background: var(--color-primary-light);
+  color: var(--color-primary-hover);
+  border-radius: var(--radius-full);
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 1.5px;
   margin-bottom: 20px;
   backdrop-filter: blur(4px);
-  border: 1px solid rgba(66, 185, 131, 0.2);
+  border: 1px solid var(--color-border);
 }
 
 .hero h1 {
@@ -193,7 +193,7 @@ onMounted(() => {
 .hero-btn {
   display: inline-block;
   padding: 14px var(--space-xl);
-  border-radius: 60px;
+  border-radius: var(--radius-full);
   font-weight: 600;
   text-decoration: none;
   transition: var(--transition-smooth);
@@ -216,14 +216,14 @@ onMounted(() => {
 .hero-btn.secondary {
   background: transparent;
   color: var(--color-text);
-  border: 1.5px solid #cbdad3;
+  border: 1.5px solid var(--color-border-dark);
 }
 
 .hero-btn.secondary:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
   transform: translateY(-2px);
-  background: rgba(66, 185, 131, 0.04);
+  background: var(--color-primary-light);
 }
 
 /* 向下滚动提示 —— 纯交互引导，无新增内容区块 */
@@ -245,7 +245,7 @@ onMounted(() => {
 
 .scroll-text {
   font-size: 0.85rem;
-  color: #5b7a6e;
+  color: var(--color-text-secondary);
   letter-spacing: 1.5px;
   text-transform: uppercase;
   margin-bottom: var(--space-sm);
@@ -313,7 +313,7 @@ onMounted(() => {
 }
 
 /* 响应式优化 */
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .hero {
     padding: 60px 16px 40px;
     border-radius: var(--radius-xl);
