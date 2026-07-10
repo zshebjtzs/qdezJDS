@@ -60,3 +60,21 @@ git reset --soft <commit>      # 回退提交但保留文件
 ## API 测试
 
 使用 VS Code 的 REST Client 插件，打开 `test-api.http`，点击每个请求上方的 “Send Request”。
+
+## 依赖管理
+
+```bash
+# 安装新依赖（前端）
+npm install <package-name>
+
+# 安装新依赖（后端）
+cd server && npm install <package-name>
+
+# 安装所有依赖（根据 package.json）
+npm install
+```
+
+**Agent 使用说明**：
+- 当你需要引入第三方库来实现某个功能时，可以直接提供 `npm install <package>` 命令给用户（或自动执行，取决于用户设置）。
+- 安装前应确认该包与项目兼容（版本、体积、是否维护中）。
+- 安装后应验证 `package.json` 中是否已正确记录依赖。
