@@ -116,14 +116,29 @@
         </div>
       </div>
     </div>
+    <!-- 裁剪弹窗（cropperjs） -->
+    <div v-if="cropModalVisible" class="modal-overlay">
+      <div class="modal-card" style="max-width: 640px;">
+        <h4>{{ cropType === 'avatar' ? '裁剪头像' : '裁剪背景图' }}</h4>
+        <div class="crop-container">
+          <img ref="cropImageEl" :src="cropImageUrl" alt="裁剪图片" style="max-width: 100%; display: block;" />
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-primary" @click="confirmCrop">确定裁剪</button>
+          <button class="btn btn-cancel" @click="closeCropModal">取消</button>
+        </div>
+      </div>
+    </div>
   </div>
   <div v-else class="loading-state">加载中...</div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore, API_BASE } from '@/stores/user'
+import Cropper from 'cropperjs'
+import 'cropperjs/dist/cropper.css'
 import request from '@/api/request'
 import defaultAvatar from '@/assets/images/default-avatar.png'
 import { validatePasswordStrength } from '@/utils/passwordValidator.js'
@@ -144,6 +159,14 @@ const editForm = ref({
   contacts: []
 })
 const originalProfile = ref(null)
+
+// 裁剪弹窗（cropperjs）状态
+const cropModalVisible = ref(false)
+const cropImageUrl = ref('')         // 待裁剪图片的 Base64 数据 URL
+const cropType = ref('avatar')       // 'avatar' | 'cover'
+const cropFile = ref(null)           // 原始文件对象
+const cropImageEl = ref(null)        // 裁剪容器内的 img 元素
+let cropperInstance = null           // Cropper 实例（非响应式，避免循环引用）
 
 // 最近发帖
 const recentPosts = ref([])
@@ -359,44 +382,99 @@ const submitPassword = async () => {
   }
 }
 
-// 头像上传
+// 头像上传 -> 打开裁剪弹窗
 const triggerAvatarUpload = () => { avatarInput.value.click() }
-const handleAvatarUpload = async (e) => {
+const handleAvatarUpload = (e) => {
   const file = e.target.files[0]
   if (!file) return
+  e.target.value = ''  // 清空 input，以便同一文件可再次选择
+  openCropModal(file, 'avatar')
+}
+
+// 背景上传 -> 打开裁剪弹窗
+const triggerCoverUpload = () => { coverInput.value.click() }
+const handleCoverUpload = (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  e.target.value = ''
+  openCropModal(file, 'cover')
+}
+
+// ---------- 裁剪弹窗操作 ----------
+const openCropModal = (file, type) => {
+  cropType.value = type
+  cropFile.value = file
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    cropImageUrl.value = e.target.result
+    cropModalVisible.value = true
+    nextTick(() => {
+      initCropper()
+    })
+  }
+  reader.readAsDataURL(file)
+}
+
+const initCropper = () => {
+  if (cropperInstance) {
+    cropperInstance.destroy()
+    cropperInstance = null
+  }
+  const imageEl = cropImageEl.value
+  if (!imageEl) return
+  cropperInstance = new Cropper(imageEl, {
+    aspectRatio: cropType.value === 'avatar' ? 1 : 4 / 1,
+    viewMode: 1,
+    dragMode: 'move',
+    autoCropArea: 1,
+    cropBoxMovable: true,
+    cropBoxResizable: true,
+    background: false,
+  })
+}
+
+const confirmCrop = async () => {
+  if (!cropperInstance || !cropFile.value) return
+
+  const cropData = cropperInstance.getData(true) // 获取精确的裁剪坐标（非取整）
   const formData = new FormData()
-  formData.append('avatar', file)
+  const field = cropType.value === 'avatar' ? 'avatar' : 'cover'
+  formData.append(field, cropFile.value)
+  formData.append('cropX', cropData.x)
+  formData.append('cropY', cropData.y)
+  formData.append('cropWidth', cropData.width)
+  formData.append('cropHeight', cropData.height)
+
   try {
-    const res = await request.post('/user/me/avatar', formData, {
+    const endpoint = cropType.value === 'avatar' ? '/user/me/avatar' : '/user/me/cover'
+    const res = await request.post(endpoint, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
-    user.value.avatar_url = res.avatar_url
-    user.value._ts = Date.now()
-    userStore.setUserInfo({ ...userStore.userInfo, avatar_url: res.avatar_url })
-    userStore.updateAvatarTimestamp()
-    e.target.value = ''
+
+    if (cropType.value === 'avatar') {
+      user.value.avatar_url = res.avatar_url
+      user.value._ts = Date.now()
+      userStore.setUserInfo({ ...userStore.userInfo, avatar_url: res.avatar_url })
+      userStore.updateAvatarTimestamp()
+    } else {
+      user.value.cover_url = res.cover_url
+      user.value._cover_ts = Date.now()
+    }
   } catch (err) {
-    alert('头像上传失败')
+    alert('上传失败：' + (err.response?.data?.error || err.message))
+  } finally {
+    closeCropModal()
   }
 }
 
-// 背景上传
-const triggerCoverUpload = () => { coverInput.value.click() }
-const handleCoverUpload = async (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-  const formData = new FormData()
-  formData.append('cover', file)
-  try {
-    const res = await request.post('/user/me/cover', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    user.value.cover_url = res.cover_url
-    user.value._cover_ts = Date.now()
-    e.target.value = ''
-  } catch (err) {
-    alert('背景上传失败')
+const closeCropModal = () => {
+  cropModalVisible.value = false
+  if (cropperInstance) {
+    cropperInstance.destroy()
+    cropperInstance = null
   }
+  cropImageUrl.value = ''
+  cropFile.value = null
 }
 
 const goToPost = (post) => {
@@ -445,6 +523,13 @@ watch(() => route.params.uid, (newUid) => {
 
 onMounted(loadUser)
 
+// 组件卸载时清理 Cropper 实例
+onUnmounted(() => {
+  if (cropperInstance) {
+    cropperInstance.destroy()
+    cropperInstance = null
+  }
+})
 </script>
 
 <style scoped>
@@ -801,6 +886,20 @@ onMounted(loadUser)
   padding: 0 var(--space-lg) var(--space-sm);
   font-size: 0.85rem;
   color: var(--color-text-muted);
+}
+
+/* 裁剪弹窗容器 */
+.crop-container {
+  margin-bottom: var(--space-md);
+  max-height: 400px;
+  overflow: hidden;
+  background: #f0f0f0;
+  border-radius: var(--radius-sm);
+}
+
+.crop-container img {
+  max-width: 100%;
+  display: block;
 }
 
 /* 响应式：小屏下头像和信息垂直排列，按钮全宽 */

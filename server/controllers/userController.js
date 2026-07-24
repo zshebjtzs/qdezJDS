@@ -139,6 +139,20 @@ export const uploadAvatar = async (req, res, next) => {
     const outputDir = path.join(PROJECT_ROOT, 'uploads', 'avatars');
     await fs.mkdir(outputDir, { recursive: true });
 
+    // 检查是否有裁剪参数
+    const { cropX, cropY, cropWidth, cropHeight } = req.body;
+    let sharpInstance = sharp(tempPath);
+
+    if (cropX && cropY && cropWidth && cropHeight) {
+      // 用户在前端进行了裁剪，先用 crop 精确裁剪
+      sharpInstance = sharpInstance.extract({
+        left: Math.round(parseFloat(cropX)),
+        top: Math.round(parseFloat(cropY)),
+        width: Math.round(parseFloat(cropWidth)),
+        height: Math.round(parseFloat(cropHeight)),
+      });
+    }
+
     const sizes = [
       { suffix: 'small', width: 32 },
       { suffix: 'medium', width: 48 },
@@ -147,7 +161,7 @@ export const uploadAvatar = async (req, res, next) => {
 
     for (const size of sizes) {
       const outPath = path.join(outputDir, `${uid}_${size.suffix}.png`);
-      await sharp(tempPath)
+      await sharpInstance
         .resize(size.width, size.width, { fit: 'cover' })
         .png()
         .toFile(outPath);
@@ -175,8 +189,20 @@ export const uploadCover = async (req, res, next) => {
     const outputDir = path.join(PROJECT_ROOT, 'uploads', 'covers');
     await fs.mkdir(outputDir, { recursive: true });
 
+    const { cropX, cropY, cropWidth, cropHeight } = req.body;
+    let sharpInstance = sharp(tempPath);
+
+    if (cropX && cropY && cropWidth && cropHeight) {
+      sharpInstance = sharpInstance.extract({
+        left: Math.round(parseFloat(cropX)),
+        top: Math.round(parseFloat(cropY)),
+        width: Math.round(parseFloat(cropWidth)),
+        height: Math.round(parseFloat(cropHeight)),
+      });
+    }
+
     const outPath = path.join(outputDir, `${uid}_cover.png`);
-    await sharp(tempPath)
+    await sharpInstance
       .resize(1200, 300, { fit: 'cover' })
       .png()
       .toFile(outPath);
