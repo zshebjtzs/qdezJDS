@@ -1,0 +1,27 @@
+# CLAUDE.md
+
+> 本文件为 Claude Code 提供项目开发规范。Claude 在开始任何任务前必须阅读。
+
+## 必读文件
+
+在开始任何任务前，请先阅读以下文件：
+- skills/SKILL.md（核心规范和技术栈）
+- skills/references/project-dashboard.md（了解当前进度和已知问题）
+
+## 编码规范
+
+- 前端：Vue 3 + Composition API，使用 `<script setup>`
+- 后端：Node.js + Express，ES6 模块化
+- 数据库：MySQL，所有查询使用参数化防止注入
+- CSS：使用全局变量 `var(--color-*)` 等，不硬编码颜色
+- 修改代码前先理解原有逻辑，不要擅自重构
+- 保留所有已有注释
+
+## 文件索引
+
+- 需要了解数据库结构 → `skills/references/database-schema.md`
+- 需要修改或新增 API → `skills/references/api-endpoints.md`
+- 需要修改样式 → `skills/references/ui-ux-guide.md`
+- 遇到报错 → `skills/references/common-errors.md`
+- 需要了解项目架构 → `skills/references/architecture.md`
+- 需要执行数据库操作 → `skills/references/database-operations.md`
