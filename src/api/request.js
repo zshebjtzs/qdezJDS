@@ -8,12 +8,19 @@ const request = axios.create({
   timeout: 10000,
 })
 
-// 请求拦截器：自动添加 JWT token
+// 请求拦截器：自动添加 JWT token + 防止 GET 缓存
 request.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // 为 GET 请求添加时间戳，防止 304 缓存
+    if (config.method === 'get') {
+      config.params = {
+        ...config.params,
+        _t: Date.now()
+      };
     }
     return config
   },

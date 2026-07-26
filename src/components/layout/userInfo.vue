@@ -17,7 +17,11 @@
 
       <div class="basic-info">
         <div class="name-line">
-          <span class="display-name" :class="{ 'admin-name': user.role === 'admin' }">
+          <span
+            class="display-name"
+            :class="{ 'admin-name': user.role === 'admin', 'clickable': isSelf }"
+            @click="isSelf && openUsernameModal()"
+          >
             {{ user.username }}
           </span>
           <span v-if="user.previous_username" class="previous-name">曾用名：{{ user.previous_username }}</span>
@@ -101,6 +105,21 @@
           <button class="btn btn-cancel" @click="showPasswordModal = false">取消</button>
         </div>
         <p v-if="passwordError" class="error-msg">{{ passwordError }}</p>
+      </div>
+    </div>
+
+    <!-- 修改用户名弹窗 -->
+    <div v-if="showUsernameModal" class="modal-overlay">
+      <div class="modal-card">
+        <h4>修改用户名</h4>
+        <p class="username-current">当前用户名：<strong>{{ user.username }}</strong></p>
+        <input v-model="usernameForm.newUsername" type="text" placeholder="输入新用户名" maxlength="50" />
+        <p class="username-hint">每 3 天可修改一次用户名</p>
+        <div class="modal-actions">
+          <button class="btn btn-primary" @click="submitUsername">确认</button>
+          <button class="btn btn-cancel" @click="showUsernameModal = false">取消</button>
+        </div>
+        <p v-if="usernameError" class="error-msg">{{ usernameError }}</p>
       </div>
     </div>
 
@@ -382,6 +401,36 @@ const submitPassword = async () => {
   }
 }
 
+// ---------- 用户名修改 ----------
+const showUsernameModal = ref(false)
+const usernameForm = ref({ newUsername: '' })
+const usernameError = ref('')
+
+const openUsernameModal = () => {
+  usernameForm.value.newUsername = ''
+  usernameError.value = ''
+  showUsernameModal.value = true
+}
+
+const submitUsername = async () => {
+  try {
+    usernameError.value = ''
+    const newName = usernameForm.value.newUsername.trim()
+    if (!newName) {
+      usernameError.value = '用户名不能为空'
+      return
+    }
+    await request.patch('/user/me/username', { newUsername: newName })
+    // 本地同步更新
+    user.value.previous_username = user.value.username
+    user.value.username = newName
+    showUsernameModal.value = false
+    usernameForm.value.newUsername = ''
+  } catch (err) {
+    usernameError.value = err.response?.data?.error || '修改失败'
+  }
+}
+
 // 头像上传 -> 打开裁剪弹窗
 const triggerAvatarUpload = () => { avatarInput.value.click() }
 const handleAvatarUpload = (e) => {
@@ -634,6 +683,13 @@ onUnmounted(() => {
 .admin-name {
   color: var(--color-info) !important;
 }
+.display-name.clickable {
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.display-name.clickable:hover {
+  color: var(--color-primary);
+}
 .previous-name {
   margin-left: var(--space-sm);
   font-size: 0.85rem;
@@ -838,6 +894,18 @@ onUnmounted(() => {
   color: var(--color-danger);
   font-size: 0.9rem;
   margin-top: var(--space-sm);
+}
+
+/* 用户名弹窗当前用户名和提示 */
+.username-current {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-sm);
+}
+.username-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
 }
 
 /* 空状态、加载提示 */

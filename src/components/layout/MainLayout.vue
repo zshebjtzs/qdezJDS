@@ -35,19 +35,38 @@ import FooterComponent from '@/components/layout/footer.vue'
 const userStore = useUserStore()
 const router = useRouter()
 
+// 安全解码 JWT payload（Base64URL → Base64 → UTF-8）
+const decodeJwtPayload = (token) => {
+  try {
+    const payload = token.split('.')[1]
+    // 替换 Base64URL 字符为标准 Base64
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    // 补齐 = 号（atob 要求长度是 4 的倍数）
+    const pad = base64.length % 4
+    const padded = pad ? base64 + '='.repeat(4 - pad) : base64
+    const decoded = atob(padded)
+    // 将 Latin-1 字节解码为 UTF-8 字符串
+    const bytes = new Uint8Array(decoded.length)
+    for (let i = 0; i < decoded.length; i++) bytes[i] = decoded.charCodeAt(i)
+    return JSON.parse(new TextDecoder().decode(bytes))
+  } catch (e) {
+    return null
+  }
+}
+
 // ---------- 前置 Token 过期检查 ----------
 const token = userStore.token
 if (token) {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
+  const payload = decodeJwtPayload(token)
+  if (!payload) {
+    userStore.logout()
+    router.push({ path: '/', query: { expired: '1' } })
+  } else {
     const now = Math.floor(Date.now() / 1000)
     if (payload.exp && now >= payload.exp) {
       userStore.logout()
       router.push({ path: '/', query: { expired: '1' } })
     }
-  } catch (e) {
-    userStore.logout()
-    router.push({ path: '/', query: { expired: '1' } })
   }
 }
 

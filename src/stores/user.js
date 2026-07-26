@@ -44,16 +44,25 @@ export const useUserStore = defineStore('user', {
       this.avatarTimestamp = Date.now()
     },
     setBans(bans) {
-      this.bans = bans
+      if (bans && typeof bans === 'object') {
+        this.bans = { ...bans };
+      } else {
+        this.bans = { post: false, cloud: false, account: false };
+      }
     },
     async fetchBans() {
       try {
         // 引入 request 需要动态导入避免循环依赖
-        const { default: request } = await import('@/api/request')
-        const res = await request.get('/user/me/bans')
-        this.setBans(res)
+        const { default: request } = await import('@/api/request');
+        const res = await request.get('/user/me/bans');
+        if (res && typeof res === 'object') {
+          this.setBans(res);
+        } else {
+          this.setBans({ post: false, cloud: false, account: false });
+        }
       } catch (e) {
-        console.error('获取封禁状态失败', e)
+        console.error('获取封禁状态失败', e);
+        this.setBans({ post: false, cloud: false, account: false });
       }
     },
     setCategoryBan(categoryId, isBanned) {

@@ -60,7 +60,8 @@ const handleLogin = async () => {
   try {
     const res = await login(username.value, password.value);
     userStore.setToken(res.token);
-    // 立即获取封禁状态
+    userStore.setUserInfo(res.user);
+    // 获取封禁状态
     await userStore.fetchBans();
     // 检查账号封禁
     if (userStore.bans.account) {
@@ -69,7 +70,6 @@ const handleLogin = async () => {
       loading.value = false;
       return;
     }
-    userStore.setUserInfo(res.user);
     router.push('/');
   } catch (err) {
     if (err.response && err.response.data && err.response.data.error) {
