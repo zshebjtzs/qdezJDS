@@ -20,6 +20,10 @@ export const useCloudStore = defineStore('cloud', {
     publicTotal: 0,
     publicQuery: '',
     currentDepartment: 'art',
+
+    // 上传进度（两端共享）
+    isUploading: false,
+    uploadProgress: 0,
   }),
 
   actions: {
@@ -47,8 +51,22 @@ export const useCloudStore = defineStore('cloud', {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('type', 'private');
-      await request.post('/cloud/private', formData);
-      await this.fetchPrivateFiles(this.privatePage, 20, this.privateQuery);
+      this.isUploading = true;
+      this.uploadProgress = 0;
+      try {
+        await request.post('/cloud/private', formData, {
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+            this.uploadProgress = percent;
+          }
+        });
+        await this.fetchPrivateFiles(this.privatePage, 20, this.privateQuery);
+      } finally {
+        // 上传完成后至少停留 500ms，让进度条可见
+        await new Promise(resolve => setTimeout(resolve, 500));
+        this.isUploading = false;
+        this.uploadProgress = 0;
+      }
     },
 
     // 删除私有文件，成功后刷新当前页
@@ -83,8 +101,22 @@ export const useCloudStore = defineStore('cloud', {
       formData.append('file', file);
       formData.append('type', 'public');
       formData.append('department', department);
-      await request.post('/cloud/public', formData);
-      await this.fetchPublicFiles(department, this.publicPage, 20, this.publicQuery);
+      this.isUploading = true;
+      this.uploadProgress = 0;
+      try {
+        await request.post('/cloud/public', formData, {
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+            this.uploadProgress = percent;
+          }
+        });
+        await this.fetchPublicFiles(department, this.publicPage, 20, this.publicQuery);
+      } finally {
+        // 上传完成后至少停留 500ms，让进度条可见
+        await new Promise(resolve => setTimeout(resolve, 500));
+        this.isUploading = false;
+        this.uploadProgress = 0;
+      }
     },
 
     // 删除公共文件，成功后刷新当前部门当前页

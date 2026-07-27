@@ -37,6 +37,14 @@
 
     <div v-if="isSearching" class="search-title">搜索结果</div>
 
+    <!-- 上传进度条 -->
+    <div v-if="store.isUploading" class="upload-progress">
+      <div class="progress-bar">
+        <div class="progress-fill" :style="{ width: store.uploadProgress + '%' }"></div>
+      </div>
+      <span class="progress-text">{{ store.uploadProgress }}%</span>
+    </div>
+
     <div v-if="store.publicLoading" class="loading">加载中...</div>
     <div v-else class="file-list">
       <div v-for="file in store.publicFiles" :key="file.id" class="file-item">
@@ -324,6 +332,33 @@ onMounted(() => {
   background: var(--color-primary-light);
   border-color: var(--color-primary);
   color: var(--color-primary);
+}
+/* 上传进度条 */
+.upload-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+}
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--color-primary-bg);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--color-primary-gradient);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+.progress-text {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  min-width: 36px;
+  text-align: right;
 }
 /* 其他公共样式已通过 cloud-common.css 引入 */
 </style>
