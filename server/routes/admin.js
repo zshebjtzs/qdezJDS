@@ -10,7 +10,8 @@ import {
   getUserBans,
   getCategoryBanStatus,
   banCategory,
-  unbanCategory
+  unbanCategory,
+  getLogs
 } from '../controllers/adminController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
@@ -75,6 +76,12 @@ router.post('/category/:categoryId/ban', authMiddleware, (req, res, next) => {
 router.delete('/category/:categoryId/ban', authMiddleware, (req, res, next) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
   unbanCategory(req, res, next);
+});
+
+// 操作日志
+router.get('/logs', authMiddleware, (req, res, next) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
+  getLogs(req, res, next);
 });
 
 export default router;

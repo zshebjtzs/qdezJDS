@@ -3,8 +3,15 @@
   <div class="admin-page">
     <h2>管理员控制面板</h2>
 
+    <!-- 选项卡导航 -->
+    <div class="tab-bar">
+      <button :class="{ active: activeTab === 'users' }" @click="activeTab = 'users'">用户管理</button>
+      <button :class="{ active: activeTab === 'categories' }" @click="activeTab = 'categories'">板块禁言</button>
+      <button :class="{ active: activeTab === 'logs' }" @click="activeTab = 'logs'">操作日志</button>
+    </div>
+
     <!-- 用户列表区域 -->
-    <section class="section">
+    <section v-if="activeTab === 'users'" class="section">
       <h3>用户管理</h3>
       <div class="search-bar">
         <input v-model="searchText" placeholder="搜索用户名..." @keyup.enter="searchUsers" />
@@ -26,13 +33,43 @@
     </section>
 
     <!-- 板块列表区域 -->
-    <section class="section">
+    <section v-if="activeTab === 'categories'" class="section">
       <h3>板块禁言设置</h3>
       <div class="category-grid">
         <div v-for="cat in categories" :key="cat.id" class="category-card">
           <span>{{ cat.name }}</span>
           <button @click="openCategoryPanel(cat)">设置</button>
         </div>
+      </div>
+    </section>
+
+    <!-- 操作日志区域 -->
+    <section v-if="activeTab === 'logs'" class="section">
+      <h3>操作日志 <span class="log-retention-hint">（保留近 {{ LOG_RETENTION_DAYS }} 天）</span></h3>
+      <div v-if="loadingLogs" class="loading">加载中...</div>
+      <div v-else>
+        <div class="log-table">
+          <div class="log-row log-header">
+            <span class="log-col time">时间</span>
+            <span class="log-col admin">管理员</span>
+            <span class="log-col action">操作</span>
+            <span class="log-col target">目标</span>
+          </div>
+          <div v-for="log in logs" :key="log.id" class="log-row">
+            <span class="log-col time">{{ formatTime(log.created_at) }}</span>
+            <span class="log-col admin">{{ log.admin_username }}</span>
+            <span class="log-col action">
+              <span :class="'action-badge action-' + log.action_type">{{ formatAction(log.action_type) }}</span>
+            </span>
+            <span class="log-col target">{{ log.target_summary || '-' }}</span>
+          </div>
+          <div v-if="logs.length === 0" class="empty">暂无操作日志</div>
+        </div>
+        <Pagination
+          :currentPage="logPage"
+          :totalPages="logTotalPages"
+          @page-change="handleLogPageChange"
+        />
       </div>
     </section>
 
@@ -123,7 +160,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import request from '@/api/request'
@@ -137,6 +174,18 @@ const adminUid = route.params.adminUid
 if (userStore.userInfo?.role !== 'admin' || userStore.userInfo.uid !== adminUid) {
   // 可以在 onMounted 中跳转或提示，暂时保留，后续可加拒绝逻辑
 }
+
+// 选项卡
+const activeTab = ref('users')
+
+// 日志保留天数（与后端常数对齐，仅用于前端展示）
+const LOG_RETENTION_DAYS = 90
+
+// 操作日志状态
+const logs = ref([])
+const loadingLogs = ref(false)
+const logPage = ref(1)
+const logTotalPages = ref(1)
 
 // 用户列表状态
 const users = ref([])
@@ -337,9 +386,55 @@ const unbanCategory = async () => {
   } catch (err) { alert('操作失败'); }
 };
 
+// ---------- 操作日志 ----------
+const logActionMap = {
+  ban_user: '封禁用户',
+  unban_user: '解封用户',
+  grant_mod: '授予版主',
+  revoke_mod: '撤销版主',
+  category_ban: '板块禁言',
+  category_unban: '解除禁言',
+  delete_post: '删除帖子',
+  delete_comment: '删除评论',
+  delete_reply: '删除回复',
+};
+
+const formatAction = (type) => logActionMap[type] || type;
+
+const fetchLogs = async (page = 1) => {
+  loadingLogs.value = true;
+  try {
+    const res = await request.get('/admin/logs', { params: { page, pageSize: 20 } });
+    logs.value = res.data || [];
+    logPage.value = res.page;
+    logTotalPages.value = res.totalPages;
+  } catch (err) {
+    console.error('获取操作日志失败', err);
+  } finally {
+    loadingLogs.value = false;
+  }
+};
+
+const handleLogPageChange = (page) => fetchLogs(page);
+
+const formatTime = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const day = d.getDate().toString().padStart(2, '0');
+  const hour = d.getHours().toString().padStart(2, '0');
+  const minute = d.getMinutes().toString().padStart(2, '0');
+  return `${month}-${day} ${hour}:${minute}`;
+};
+
 onMounted(() => {
   fetchUsers()
   fetchCategories()
+})
+
+// 切换到日志选项卡时自动加载
+watch(activeTab, (tab) => {
+  if (tab === 'logs') fetchLogs()
 })
 </script>
 
@@ -647,4 +742,92 @@ h2 {
     align-items: flex-start;
   }
 }
+
+/* =============================================
+   选项卡导航
+   ============================================= */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: var(--space-xl);
+  border-bottom: 2px solid var(--color-border);
+}
+.tab-bar button {
+  padding: 10px 24px;
+  border: none;
+  background: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: var(--transition-fast);
+}
+.tab-bar button:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-bg);
+}
+.tab-bar button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* 操作日志保留天数小字 */
+.log-retention-hint {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* 操作日志表格 */
+.log-table {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.log-row {
+  display: grid;
+  grid-template-columns: 130px 120px 100px 1fr;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border);
+  align-items: center;
+  font-size: 0.9rem;
+}
+.log-row:last-child {
+  border-bottom: none;
+}
+.log-row.log-header {
+  background: var(--color-primary-bg);
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 0.85rem;
+}
+.log-row:not(.log-header):hover {
+  background: #f9f9f9;
+}
+.log-col {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.log-col.time {
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+/* 操作类型标记 */
+.action-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.action-ban_user, .action-category_ban { background: var(--color-danger-light); color: var(--color-danger); }
+.action-unban_user, .action-category_unban { background: var(--color-primary-bg); color: var(--color-primary); }
+.action-grant_mod { background: #e8f5e9; color: #2e7d32; }
+.action-revoke_mod { background: #fff3e0; color: #e65100; }
+.action-delete_post, .action-delete_comment, .action-delete_reply { background: #fce4ec; color: #c62828; }
 </style>

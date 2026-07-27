@@ -174,7 +174,28 @@ CREATE TABLE `files` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
--- 10. 插入默认板块数据
+-- 10. 管理员操作日志表
+-- =============================================
+DROP TABLE IF EXISTS `admin_logs`;
+CREATE TABLE `admin_logs` (
+  `id`              INT              NOT NULL AUTO_INCREMENT,
+  `admin_id`        INT              NOT NULL COMMENT '管理员用户ID',
+  `admin_uid`       CHAR(15)         NOT NULL COMMENT '管理员对外UID',
+  `admin_username`  VARCHAR(50)      NOT NULL COMMENT '管理员当时用户名',
+  `action_type`     VARCHAR(50)      NOT NULL COMMENT '操作类型',
+  `target_type`     VARCHAR(50)      DEFAULT NULL COMMENT '目标类型',
+  `target_id`       INT              DEFAULT NULL COMMENT '目标ID',
+  `target_summary`  VARCHAR(255)     DEFAULT NULL COMMENT '人类可读描述',
+  `details`         JSON             DEFAULT NULL COMMENT '扩展详情',
+  `created_at`      TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_admin_id` (`admin_id`),
+  KEY `idx_action_type` (`action_type`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- 11. 插入默认板块数据
 -- =============================================
 INSERT INTO `categories` (`name`, `slug`, `type`, `department`, `sort_order`) VALUES
 ('站务公告', 'announcements', 'public', 'none', 1),
