@@ -360,3 +360,7 @@ Authorization: Bearer <token>
 ### 获取板块禁言状态
 GET http://localhost:3001/api/admin/category/1/ban-status
 Authorization: Bearer <token>
+
+### 获取操作日志（分页）
+GET http://localhost:3001/api/admin/logs?page=1&pageSize=20
+Authorization: Bearer <token>
