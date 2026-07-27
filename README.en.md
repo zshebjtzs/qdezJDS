@@ -53,10 +53,10 @@ Development follows a **Vibecoding** approach, assisted by the `deepseek-v4pro` 
 
 | Module | Sub‑features |
 | --- | --- |
-| **User System** | Registration (admin‑created via API), login, JWT authentication; custom avatar/cover image (cropping and upload); profile (contact info, bio, theme color); password change (strength validation); username change cooldown (3 days), former usernames displayed; purple name for admins, red for moderators; last active time auto‑recorded |
+| **User System** | Registration (admin‑created via API), login, JWT authentication; custom avatar/cover image (cropping and upload); profile (contact info, bio, theme color); password change (strength validation); click‑to‑edit username (3‑day cooldown), former usernames displayed; purple name for admins, red for moderators; last active time auto‑recorded |
 | **Forum** | Multi‑category (internal/public sections, department affairs); post sorting by time and popularity (server‑side pagination); Markdown + LaTeX editing and rendering (Vditor + KaTeX); tree‑structured comments/replies (max 2 levels, @mentions, nested indentation); paginated comments/replies; post permissions (allow browse/comment); admin/mod management (delete posts, modify permissions, board‑specific mute); user mute/unmute (global or board‑level); deduplicated post view counts |
-| **Cloud Drive** | Private/public storage; department‑shared spaces; upload, download, delete; Chinese filename handling; file search (client‑side); paginated lists |
-| **Admin Console** | User management (search, ban/unban, grant/revoke moderator); board‑specific mute control; ban durations (1h/1d/3d/7d/30d or permanent) |
+| **Cloud Drive** | Private/public storage; department‑shared spaces; upload with progress bar, download, delete; Chinese filename handling; server‑side search with keyword highlighting; paginated lists |
+| **Admin Console** | User management (search, ban/unban, grant/revoke moderator); board‑specific mute control; ban durations (1h/1d/3d/7d/30d or permanent); admin audit log with 90‑day retention |
 | **General** | Responsive layout; pagination component; global CSS design tokens; security (Helmet, parameterized queries, DOMPurify, XSS protection); user directory; terms of use / privacy policy; auto‑logout on token expiry and ban interception |
 
 ---
@@ -171,7 +171,7 @@ qdezJDS/
      mysql -u root -p qdez_JDS_db < server/db/init.sql
      ```
 
-     > This script creates all business tables (users, posts, comments, replies, ban records, etc.) and inserts 10 default forum boards.
+     > This script creates all business tables (users, posts, comments, replies, ban records, admin audit logs, etc.) and inserts 10 default forum boards.
 
    - Create a `.env` file inside the `server/` directory (use `.env.example` as template) and fill in your credentials:
 
@@ -279,10 +279,15 @@ Key endpoints:
 | ------ | ----------------------- | ----------------------------------- | ----------- |
 | GET    | `/api/admin/users`      | User list (search, paginated)       | Admin       |
 | GET    | `/api/admin/categories` | Category list                       | Admin       |
-| POST   | `/api/admin/ban`        | Ban a user or board                 | Admin       |
-| POST   | `/api/admin/unban`      | Unban a user                        | Admin       |
-| POST   | `/api/admin/grant-mod`  | Grant moderator role                | Admin       |
-| POST   | `/api/admin/revoke-mod` | Revoke moderator role               | Admin       |
+| POST   | `/api/admin/ban`        | Ban a user                           | Admin       |
+| POST   | `/api/admin/unban`      | Unban a user                         | Admin       |
+| GET    | `/api/admin/user/:userId/bans` | User ban details              | Admin       |
+| POST   | `/api/admin/grant-mod`  | Grant moderator role                 | Admin       |
+| POST   | `/api/admin/revoke-mod` | Revoke moderator role                | Admin       |
+| GET    | `/api/admin/category/:categoryId/ban-status` | Board mute status    | Admin       |
+| POST   | `/api/admin/category/:categoryId/ban` | Mute a board                  | Admin       |
+| DELETE | `/api/admin/category/:categoryId/ban` | Unmute a board                | Admin       |
+| GET    | `/api/admin/logs`       | Admin audit log (paginated)         | Admin       |
 
 ---
 
@@ -298,6 +303,7 @@ Core business tables have been significantly upgraded, including:
 - **moderators**: Moderator assignment records.
 - **post_views**: View records for deduplicated counting.
 - **files**: Cloud drive file metadata.
+- **admin_logs**: Administrator audit trail with 90-day retention.
 
 Full SQL schema is available at `server/db/init.sql` .
 
