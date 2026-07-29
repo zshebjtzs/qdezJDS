@@ -13,7 +13,8 @@ import {
   getReplies,
   deleteComment,
   deleteReply,
-  getCategoryBanStatus
+  getCategoryBanStatus,
+  togglePin
 } from '../controllers/forumController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
@@ -35,6 +36,7 @@ router.get('/:slug/posts/:postId', authMiddleware, getPostDetail);
 router.post('/:slug/posts', authMiddleware, addPost);
 router.patch('/:slug/posts/:postId/permission', authMiddleware, updatePostPermission);
 router.delete('/:slug/posts/:postId', authMiddleware, deletePost);
+router.patch('/:slug/posts/:postId/pin', authMiddleware, togglePin);
 
 // 评论路由
 router.post('/:slug/posts/:postId/comments', authMiddleware, addComment);

@@ -64,6 +64,7 @@ CREATE TABLE `posts` (
   `view_count`    INT              DEFAULT 0,
   `can_reply`     BOOLEAN          DEFAULT TRUE COMMENT '是否允许评论',
   `can_browse`    BOOLEAN          DEFAULT TRUE COMMENT '是否允许浏览',
+  `is_pinned`     BOOLEAN          NOT NULL DEFAULT FALSE COMMENT '是否置顶',
   `created_at`    TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,

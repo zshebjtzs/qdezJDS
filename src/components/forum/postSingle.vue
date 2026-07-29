@@ -1,7 +1,10 @@
 <!-- src/components/forum/postSingle.vue -->
 <template>
   <div class="post-single" v-if="post">
-    <h2>{{ post.title }}</h2>
+    <h2>
+      <span v-if="post.isPinned" class="pinned-badge">📌</span>
+      {{ post.title }}
+    </h2>
     <div class="author-line">
       <router-link :to="`/user/${post.authorUid}`" class="author-link">
         <img :src="getAvatar(post.authorAvatar)" class="avatar-medium" />
@@ -24,6 +27,9 @@
         <label>
           <input type="checkbox" :checked="canReply" @change="togglePerm('can_reply', $event)" /> 允许评论
         </label>
+        <button @click="handleTogglePin" class="btn-pin">
+          {{ post.isPinned ? '取消置顶' : '置顶' }}
+        </button>
       </template>
     </div>
 
@@ -120,7 +126,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { getPostDetail, deletePost, updatePostPermission, getComments, addComment, getReplies, addReply, deleteComment, deleteReply } from '@/api/forum'
+import { getPostDetail, deletePost, updatePostPermission, togglePin, getComments, addComment, getReplies, addReply, deleteComment, deleteReply } from '@/api/forum'
 import { renderMarkdown } from '@/markdown/renderer.js'
 import MarkdownEditor from '@/markdown/editor.vue'
 import Pagination from '@/components/common/Pagination.vue'
@@ -430,6 +436,16 @@ const deleteThisPost = async () => {
   }
 }
 
+// 切换置顶状态
+const handleTogglePin = async () => {
+  try {
+    const res = await togglePin(slug, postId)
+    post.value.isPinned = res.isPinned
+  } catch (err) {
+    alert('操作失败')
+  }
+}
+
 // 修改权限
 const togglePerm = async (field, event) => {
   const newValue = event.target.checked
@@ -489,6 +505,16 @@ onMounted(async () => {
   border: 1px solid var(--color-border);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: var(--color-text);
+}
+
+.post-single h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.pinned-badge {
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
 h2 {
@@ -613,6 +639,18 @@ h2 {
   accent-color: var(--color-primary);
   cursor: pointer;
 }
+
+/* 置顶按钮独立样式（与管理栏红色删除按钮区分） */
+.manage-bar .btn-pin {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+.manage-bar .btn-pin:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
 
 /* ---- 分隔线 ---- */
 hr {

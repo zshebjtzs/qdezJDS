@@ -11,7 +11,8 @@
 
     <div v-if="loading" class="loading-state">加载中...</div>
     <div v-else>
-      <div v-for="post in posts" :key="post.id" class="post-card">
+      <div v-for="post in posts" :key="post.id" class="post-card" :class="{ pinned: post.isPinned }">
+        <span v-if="post.isPinned" class="pinned-flag">📌</span>
         <router-link :to="`/forum/${slug}/${post.id}`" class="post-title">{{ post.title }}</router-link>
         <div class="post-meta">
           <router-link :to="`/user/${post.authorUid}`" class="author-link">
@@ -243,6 +244,18 @@ h2 {
 
 .post-card:hover {
   box-shadow: var(--shadow-sm);
+}
+
+.post-card.pinned {
+  border-left: 4px solid var(--color-primary);
+  background: var(--color-primary-bg);
+  padding-left: 14px;
+}
+
+.pinned-flag {
+  font-size: 1rem;
+  line-height: 1;
+  margin-right: 2px;
 }
 
 .post-title {

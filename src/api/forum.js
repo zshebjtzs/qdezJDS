@@ -67,3 +67,8 @@ export const deleteComment = (slug, commentId) => {
 export const deleteReply = (slug, replyId) => {
   return request.delete(`/forum/replies/${replyId}`)
 }
+
+// 切换帖子置顶状态
+export const togglePin = (slug, postId) => {
+  return request.patch(`/forum/${slug}/posts/${postId}/pin`)
+}

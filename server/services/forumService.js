@@ -10,6 +10,7 @@ export const getPostsByCategory = async (categoryId, userId = null, page = 1, pa
       p.department, p.forum_type AS forumType,
       p.category_id AS categoryId, p.view_count AS viewCount,
       p.can_reply AS canReply, p.can_browse AS canBrowse,
+      p.is_pinned AS isPinned,
       p.created_at AS createdAt,
       (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS commentCount
   `;
@@ -24,12 +25,12 @@ export const getPostsByCategory = async (categoryId, userId = null, page = 1, pa
     params.push(userId, userId, categoryId, userId);
   }
 
-  // 排序
+  // 排序：置顶帖永远在最前，互不干扰
   let orderClause;
   if (sortBy === 'hot') {
-    orderClause = `ORDER BY (commentCount * 10 + p.view_count) * GREATEST(0.2, EXP(-0.015 * DATEDIFF(NOW(), p.created_at))) DESC, p.created_at DESC`;
+    orderClause = `ORDER BY p.is_pinned DESC, (commentCount * 10 + p.view_count) * GREATEST(0.2, EXP(-0.015 * DATEDIFF(NOW(), p.created_at))) DESC, p.created_at DESC`;
   } else {
-    orderClause = `ORDER BY p.created_at DESC`;
+    orderClause = `ORDER BY p.is_pinned DESC, p.created_at DESC`;
   }
 
   const baseQuery = `${selectFields} ${fromClause} ${whereClause} ${orderClause}`;
@@ -94,4 +95,12 @@ export const getRecentPostsByUserId = async (userId, limit = 4) => {
     [userId, limit]
   );
   return rows;
+};
+
+// 切换帖子置顶状态
+export const togglePostPin = async (postId) => {
+  await pool.query(
+    `UPDATE posts SET is_pinned = NOT is_pinned WHERE id = ?`,
+    [postId]
+  );
 };

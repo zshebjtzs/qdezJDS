@@ -101,6 +101,7 @@ export const getPostDetail = async (req, res, next) => {
       categoryId: post.category_id,
       canReply: !!post.can_reply,
       canBrowse: !!post.can_browse,
+      isPinned: !!post.is_pinned,
       viewCount: post.view_count,
       createdAt: post.created_at,
       moderatorIds: modIds
@@ -356,11 +357,34 @@ export const getCategoryBanStatus = async (req, res, next) => {
   try {
     const { categoryId } = req.params;
     const [rows] = await pool.query(
-      `SELECT 1 FROM bans 
-       WHERE category_id = ? AND type = 'post' AND user_id IS NULL 
+      `SELECT 1 FROM bans
+       WHERE category_id = ? AND type = 'post' AND user_id IS NULL
        AND (banned_until IS NULL OR banned_until > NOW()) LIMIT 1`,
       [categoryId]
     );
     res.json({ isBanned: rows.length > 0 });
   } catch (err) { next(err); }
+};
+
+// ---------- 帖子置顶 ----------
+
+export const togglePin = async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+    const post = await forumService.getPostById(postId);
+    if (!post) return res.status(404).json({ error: '帖子不存在' });
+
+    // 权限检查：管理员或该板块版主
+    const isAdmin = req.user.role === 'admin';
+    const isMod = await isModerator(req.user.id, post.category_id);
+    if (!isAdmin && !isMod) {
+      return res.status(403).json({ error: '无权操作' });
+    }
+
+    await forumService.togglePostPin(postId);
+    const updatedPost = await forumService.getPostById(postId);
+    res.json({ isPinned: updatedPost.is_pinned });
+  } catch (err) {
+    next(err);
+  }
 };
