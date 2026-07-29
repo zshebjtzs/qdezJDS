@@ -104,7 +104,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { createPost } from '@/api/forum'
+import { createPost, getCategories } from '@/api/forum'
 import MarkdownEditor from '@/markdown/editor.vue'
 
 const route = useRoute()
@@ -155,8 +155,13 @@ const beforeUnloadHandler = (e) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('beforeunload', beforeUnloadHandler)
+  try {
+    categories.value = await getCategories()
+  } catch (e) {
+    console.error('获取板块列表失败', e)
+  }
 })
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', beforeUnloadHandler)
