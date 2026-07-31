@@ -1,6 +1,7 @@
 // server/controllers/adminController.js
 import * as adminService from '../services/adminService.js';
 import { createLog } from '../services/adminLogService.js';
+import { createNotification } from '../services/notificationService.js';
 import { findUserById } from '../services/userService.js';
 import pool from '../config/db.js';
 
@@ -53,6 +54,19 @@ export const banUser = async (req, res, next) => {
       targetSummary: `封禁了用户 ${bannedUser?.username || userId} 的${BAN_TYPE_LABELS[type] || type}`,
       details: { banType: type, duration: duration || 'permanent', categoryId }
     });
+
+    // 通知被禁用户（账号封禁不通知，因为无法登录）
+    if (type !== 'account') {
+      const permLabel = type === 'post' ? '发帖' : '网盘使用';
+      await createNotification({
+        userId,
+        type: 'banned',
+        actorUsername: null,
+        titleSnapshot: null,
+        contentSnapshot: `${permLabel}权限已被禁用`
+      });
+    }
+
     res.json({ message: '封禁成功' });
   } catch (err) {
     next(err);
@@ -72,6 +86,19 @@ export const unbanUser = async (req, res, next) => {
       targetSummary: `启用了用户 ${unbannedUser?.username || userId} 的${BAN_TYPE_LABELS[type] || type}`,
       details: { banType: type }
     });
+
+    // 通知被解封用户（账号封禁不通知）
+    if (type !== 'account') {
+      const permLabel = type === 'post' ? '发帖' : '网盘使用';
+      await createNotification({
+        userId,
+        type: 'unbanned',
+        actorUsername: null,
+        titleSnapshot: null,
+        contentSnapshot: `${permLabel}权限已启用`
+      });
+    }
+
     res.json({ message: '解封成功' });
   } catch (err) {
     next(err);

@@ -196,7 +196,30 @@ CREATE TABLE `admin_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
--- 11. 插入默认板块数据
+-- 11. 站内通知表
+-- =============================================
+DROP TABLE IF EXISTS `notifications`;
+CREATE TABLE `notifications` (
+  `id`               INT              NOT NULL AUTO_INCREMENT,
+  `user_id`          INT              NOT NULL COMMENT '接收者用户ID',
+  `type`             VARCHAR(50)      NOT NULL COMMENT '通知类型：comment/reply/post_deleted/comment_deleted/reply_deleted/permission_changed/banned/unbanned',
+  `post_id`          INT              DEFAULT NULL COMMENT '关联帖子ID（跳转用）',
+  `category_slug`    VARCHAR(50)      DEFAULT NULL COMMENT '板块slug（构造跳转URL）',
+  `comment_id`       INT              DEFAULT NULL COMMENT '关联评论ID（精确定位用）',
+  `reply_id`         INT              DEFAULT NULL COMMENT '关联回复ID（精确定位用）',
+  `actor_username`   VARCHAR(50)      DEFAULT NULL COMMENT '触发者用户名（删除类通知为NULL，匿名）',
+  `title_snapshot`   VARCHAR(200)     DEFAULT NULL COMMENT '帖子标题快照',
+  `content_snapshot` VARCHAR(500)     DEFAULT NULL COMMENT '内容快照（评论/回复预览或被删内容）',
+  `is_read`          BOOLEAN          NOT NULL DEFAULT FALSE,
+  `created_at`       TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user` (`user_id`, `is_read`),
+  KEY `idx_user_created` (`user_id`, `created_at`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- 12. 插入默认板块数据
 -- =============================================
 INSERT INTO `categories` (`name`, `slug`, `type`, `department`, `sort_order`) VALUES
 ('站务公告', 'announcements', 'public', 'none', 1),

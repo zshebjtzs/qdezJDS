@@ -6,6 +6,7 @@ import * as replyService from '../services/replyService.js';
 import * as viewService from '../services/viewService.js';
 import * as moderatorService from '../services/moderatorService.js';
 import { isModerator } from '../services/moderatorService.js';
+import { createNotification } from '../services/notificationService.js';
 import pool from '../config/db.js';
 
 // ---------- 板块相关 ----------
@@ -184,6 +185,22 @@ export const updatePostPermission = async (req, res, next) => {
     }
 
     await forumService.updatePostPermission(postId, field, value ? 1 : 0);
+
+    // 通知帖子作者（跳过自己修改自己的帖子），内容存权限变更描述
+    if (post.user_id !== req.user.id) {
+      const action = value ? '允许' : '禁止';
+      const permLabel = field === 'can_reply' ? '回复' : '访问';
+      await createNotification({
+        userId: post.user_id,
+        type: 'permission_changed',
+        postId: post.id,
+        categorySlug: req.params.slug,
+        actorUsername: null,
+        titleSnapshot: post.title,
+        contentSnapshot: `已被${action}${permLabel}`
+      });
+    }
+
     res.json({ message: '更新成功' });
   } catch (err) {
     next(err);
@@ -206,6 +223,19 @@ export const deletePost = async (req, res, next) => {
     if (await isModerator(req.user.id, category.id)) canDelete = true;
 
     if (!canDelete) return res.status(403).json({ error: '无权限删除此帖子' });
+
+    // 通知帖子作者（仅管理员/版主删除时匿名通知；作者自删不通知）
+    if (req.user.id !== post.user_id) {
+      await createNotification({
+        userId: post.user_id,
+        type: 'post_deleted',
+        postId: post.id,
+        categorySlug: req.params.slug,
+        actorUsername: null,
+        titleSnapshot: post.title,
+        contentSnapshot: null
+      });
+    }
 
     await forumService.deletePost(postId);
     res.json({ message: '帖子已删除' });
@@ -232,6 +262,21 @@ export const addComment = async (req, res, next) => {
     }
 
     const commentId = await commentService.createComment(postId, req.user.id, content);
+
+    // 通知帖子作者（跳过自己评论自己的帖子）
+    if (post.user_id !== req.user.id) {
+      await createNotification({
+        userId: post.user_id,
+        type: 'comment',
+        postId: post.id,
+        categorySlug: req.params.slug,
+        commentId,
+        actorUsername: req.user.username,
+        titleSnapshot: post.title,
+        contentSnapshot: content
+      });
+    }
+
     res.status(201).json({ id: commentId, message: '评论成功' });
   } catch (err) {
     next(err);
@@ -272,7 +317,24 @@ export const addReply = async (req, res, next) => {
       return res.status(403).json({ error: '该帖已禁止评论' });
     }
 
-    await replyService.createReply(commentId, req.user.id, replyToUserId, content, parentReplyId || null);
+    const replyId = await replyService.createReply(commentId, req.user.id, replyToUserId, content, parentReplyId || null);
+
+    // 通知被回复者（跳过自己回复自己），该板块 slug 从帖子反查
+    if (replyToUserId !== req.user.id) {
+      const category = await getCategoryByPost(post);
+      await createNotification({
+        userId: replyToUserId,
+        type: 'reply',
+        postId: post.id,
+        categorySlug: category?.slug || null,
+        commentId,
+        replyId,
+        actorUsername: req.user.username,
+        titleSnapshot: post.title,
+        contentSnapshot: content
+      });
+    }
+
     res.status(201).json({ message: '回复成功' });
   } catch (err) {
     next(err);
@@ -317,6 +379,20 @@ export const deleteComment = async (req, res, next) => {
       return res.status(403).json({ error: '无权限删除此评论' });
     }
 
+    // 通知评论作者（仅管理员/版主删除时匿名通知；作者自删不通知）
+    if (req.user.id !== comment.user_id) {
+      await createNotification({
+        userId: comment.user_id,
+        type: 'comment_deleted',
+        postId: post.id,
+        categorySlug: category.slug,
+        commentId,
+        actorUsername: null,
+        titleSnapshot: post.title,
+        contentSnapshot: comment.content
+      });
+    }
+
     // 外键 CASCADE 自动删除该评论下的所有回复
     await pool.query('DELETE FROM comments WHERE id = ?', [commentId]);
     res.json({ message: '评论已删除' });
@@ -343,6 +419,20 @@ export const deleteReply = async (req, res, next) => {
     const isMod = await isModerator(req.user.id, category.id);
     if (req.user.id !== reply.user_id && req.user.role !== 'admin' && !isMod) {
       return res.status(403).json({ error: '无权限删除此回复' });
+    }
+
+    // 通知回复作者（仅管理员/版主删除时匿名通知；作者自删不通知）
+    if (req.user.id !== reply.user_id) {
+      await createNotification({
+        userId: reply.user_id,
+        type: 'reply_deleted',
+        postId: post.id,
+        categorySlug: category.slug,
+        commentId: reply.comment_id,
+        actorUsername: null,
+        titleSnapshot: post.title,
+        contentSnapshot: reply.content
+      });
     }
 
     // 外键 CASCADE 自动删除该回复下的所有二级回复

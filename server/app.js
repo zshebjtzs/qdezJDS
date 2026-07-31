@@ -14,6 +14,7 @@ import cloudRoutes from './routes/cloud.js';
 import adminRoutes from './routes/admin.js';
 import userRoutes from './routes/user.js';
 import userListRoutes from './routes/userList.js';
+import notificationRoutes from './routes/notification.js';
 
 // 导入错误处理中间件
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -51,6 +52,9 @@ app.use('/api/forum', forumRoutes);
 app.use('/api/cloud', cloudRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/users', userListRoutes);
+
+// 站内通知接口
+app.use('/api/notifications', notificationRoutes);
 
 // 管理员接口
 app.use('/api/admin', adminRoutes);
