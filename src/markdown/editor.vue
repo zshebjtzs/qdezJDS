@@ -9,6 +9,12 @@ import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import Vditor from 'vditor'
 import 'vditor/dist/index.css'
 
+// Vditor 运行时资源 CDN（预览高亮/KaTeX/marked 等按需加载）
+// 默认 unpkg.com 在国内不稳定，替换为 jsdelivr 镜像
+// 注意：结尾不能带斜杠，Vditor 内部拼接 cdn + "/dist/..."，避免产生双斜杠
+// 升级 Vditor 版本时需同步更新此版本号
+const VDITOR_CDN = 'https://cdn.jsdelivr.net/npm/vditor@3.11.2'
+
 const props = defineProps({
   modelValue: { type: String, default: '' },
   placeholder: { type: String, default: '请输入内容...' },
@@ -42,6 +48,7 @@ onMounted(() => {
 function initVditor() {
   if (vditorInstance) return
   vditorInstance = new Vditor(vditorContainer.value, {
+    cdn: VDITOR_CDN,           // 运行时资源走 jsdelivr 镜像
     mode: 'sv',                // 分屏预览（左侧编辑，右侧预览）
     height: props.height,
     placeholder: props.placeholder,
