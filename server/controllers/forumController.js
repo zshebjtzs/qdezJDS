@@ -272,6 +272,7 @@ export const addComment = async (req, res, next) => {
         categorySlug: req.params.slug,
         commentId,
         actorUsername: req.user.username,
+        actorUid: req.user.uid,
         titleSnapshot: post.title,
         contentSnapshot: content
       });
@@ -330,6 +331,7 @@ export const addReply = async (req, res, next) => {
         commentId,
         replyId,
         actorUsername: req.user.username,
+        actorUid: req.user.uid,
         titleSnapshot: post.title,
         contentSnapshot: content
       });

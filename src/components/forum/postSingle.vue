@@ -45,7 +45,7 @@
 
     <!-- 评论列表 -->
     <div v-if="!allCommentsCollapsed">
-      <div v-for="comment in comments" :key="comment.id" class="comment-block">
+      <div v-for="comment in comments" :key="comment.id" :id="'comment-' + comment.id" class="comment-block">
         <div class="comment-header">
           <router-link :to="`/user/${comment.authorUid}`" class="author-link">
             <img :src="getAvatar(comment.authorAvatar)" class="avatar-small" />
@@ -67,7 +67,7 @@
 
         <!-- 该评论的嵌套回复（二级限制） -->
         <div v-if="!isRepliesCollapsed(comment.id) && comment.replies && comment.replies.length > 0" class="replies-container">
-          <div v-for="reply in comment.replies" :key="reply.id" :style="{ marginLeft: (reply.depth || 0) * 20 + 'px' }" class="reply-item">
+          <div v-for="reply in comment.replies" :key="reply.id" :id="'reply-' + reply.id" :style="{ marginLeft: (reply.depth || 0) * 20 + 'px' }" class="reply-item">
             <div class="reply-header">
               <router-link :to="`/user/${reply.authorUid}`" class="author-link">
                 <img :src="getAvatar(reply.authorAvatar)" class="avatar-small" />
@@ -123,7 +123,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getPostDetail, deletePost, updatePostPermission, togglePin, getComments, addComment, getReplies, addReply, deleteComment, deleteReply } from '@/api/forum'
@@ -482,10 +482,77 @@ const handleCommentPageChange = (page) => {
   loadComments(page)
 }
 
+// ---------- 通知详情定位（B站版：滚动到具体评论/回复） ----------
+const highlightTarget = (elId) => {
+  nextTick(() => {
+    const el = document.getElementById(elId)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    el.classList.add('highlight-target')
+    setTimeout(() => el.classList.remove('highlight-target'), 3000)
+  })
+}
+
+// 从通知详情跳转：根据 query.commentId / query.replyId 定位
+const locateTargetComment = async () => {
+  const targetCommentId = parseInt(route.query.commentId)
+  if (!targetCommentId) return
+
+  // 在当前页查找
+  let found = comments.value.some(c => c.id === targetCommentId)
+  let page = commentCurrentPage.value
+
+  // 跨页查找评论
+  while (!found && page < commentTotalPages.value) {
+    page++
+    const res = await getComments(slug, postId, page)
+    comments.value = res.data
+    commentCurrentPage.value = page
+    commentTotalPages.value = res.totalPages
+    comments.value.forEach(c => loadReplies(c, 1))
+    found = comments.value.some(c => c.id === targetCommentId)
+  }
+
+  if (!found) return
+  highlightTarget(`comment-${targetCommentId}`)
+
+  // 若还指定了回复，定位到具体回复
+  const targetReplyId = parseInt(route.query.replyId)
+  if (targetReplyId) {
+    const comment = comments.value.find(c => c.id === targetCommentId)
+    if (comment) await locateTargetReply(comment, targetReplyId)
+  }
+}
+
+const locateTargetReply = async (comment, targetReplyId) => {
+  // 确保该评论的回复展开
+  collapsedReplies[comment.id] = false
+
+  // 判断某回复是否在树中（含一级和二级）
+  const replyExists = (replies) => (replies || []).some(r =>
+    r.id === targetReplyId || (r.children || []).some(ch => ch.id === targetReplyId)
+  )
+
+  let found = replyExists(comment.replies)
+  let page = comment.replyCurrentPage || 1
+
+  // 跨页查找回复
+  while (!found && page < (comment.replyTotalPages || 1)) {
+    page++
+    await loadReplies(comment, page)
+    found = replyExists(comment.replies)
+  }
+
+  if (found) highlightTarget(`reply-${targetReplyId}`)
+}
+
 onMounted(async () => {
   await userStore.fetchBans();  // 确保最新
   await loadPost();
-  if (post.value) loadComments();
+  if (post.value) {
+    await loadComments();
+    await locateTargetComment();
+  }
 })
 </script>
 
@@ -515,6 +582,16 @@ onMounted(async () => {
 .pinned-badge {
   font-size: 1.2rem;
   line-height: 1;
+}
+
+/* 通知详情跳转：目标评论/回复高亮 */
+.highlight-target {
+  animation: target-flash 3s ease-out;
+  border-radius: var(--radius-md);
+}
+@keyframes target-flash {
+  0%, 40% { background: var(--color-primary-light); }
+  100% { background: transparent; }
 }
 
 h2 {

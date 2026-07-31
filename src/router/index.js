@@ -47,6 +47,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/notifications',
+    name: 'Notifications',
+    component: () => import('@/views/NotificationsPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/legal/terms',
     name: 'LegalTerms',
     component: () => import('@/components/legal/legalView.vue'),

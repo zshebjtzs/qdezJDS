@@ -4,6 +4,25 @@
       <router-link to="/">首页</router-link>
       <router-link to="/forum">论坛</router-link>
       <router-link to="/cloud">网盘</router-link>
+      <!-- 通知铃铛（仅登录后显示） -->
+      <router-link v-if="userStore.isLoggedIn" to="/notifications" class="bell-link">
+        <svg
+          class="bell-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span v-if="notifStore.unreadCount > 0" class="bell-dot"></span>
+      </router-link>
       <span v-if="userStore.isLoggedIn && userStore.userInfo" class="user-info">
         <router-link :to="`/user/${userStore.userInfo.uid}`" class="user-link">
           <img
@@ -26,14 +45,27 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useUserStore, API_BASE } from '@/stores/user'
+import { useNotificationStore } from '@/stores/notifications'
 import { useRouter } from 'vue-router'
 import defaultAvatar from '@/assets/images/default-avatar.png'
 import FooterComponent from '@/components/layout/footer.vue'
 
 const userStore = useUserStore()
+const notifStore = useNotificationStore()
 const router = useRouter()
+
+// 登录后拉取未读数（红点），未登录清零
+const syncUnreadCount = () => {
+  if (userStore.isLoggedIn) {
+    notifStore.fetchUnreadCount()
+  } else {
+    notifStore.setUnreadCount(0)
+  }
+}
+onMounted(syncUnreadCount)
+watch(() => userStore.isLoggedIn, syncUnreadCount)
 
 // 安全解码 JWT payload（Base64URL → Base64 → UTF-8）
 const decodeJwtPayload = (token) => {
@@ -139,6 +171,36 @@ const handleAvatarError = (e) => {
   transform: translateY(-2px);
 }
 
+/* 通知铃铛 */
+.bell-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  transition: var(--transition-fast);
+}
+.bell-link:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+.bell-icon {
+  display: block;
+}
+.bell-dot {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--color-danger-light);
+}
+
 /* 用户信息区域（右侧） */
 .user-info {
   margin-left: auto;
@@ -209,6 +271,9 @@ const handleAvatarError = (e) => {
     flex-wrap: wrap;
     padding: var(--space-sm) var(--space-md);
     gap: var(--space-sm);
+  }
+  .bell-link {
+    margin-left: auto;
   }
   .user-info {
     margin-left: 0;

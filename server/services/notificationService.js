@@ -3,11 +3,11 @@ import pool from '../config/db.js';
 import { NOTIFICATION_RETENTION_DAYS } from '../config/constants.js';
 
 // 写入一条通知，同时清理过期通知
-export const createNotification = async ({ userId, type, postId, categorySlug, commentId, replyId, actorUsername, titleSnapshot, contentSnapshot }) => {
+export const createNotification = async ({ userId, type, postId, categorySlug, commentId, replyId, actorUsername, actorUid, titleSnapshot, contentSnapshot }) => {
   await pool.query(
-    `INSERT INTO notifications (user_id, type, post_id, category_slug, comment_id, reply_id, actor_username, title_snapshot, content_snapshot)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [userId, type, postId, categorySlug, commentId, replyId, actorUsername, titleSnapshot, contentSnapshot]
+    `INSERT INTO notifications (user_id, type, post_id, category_slug, comment_id, reply_id, actor_username, actor_uid, title_snapshot, content_snapshot)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [userId, type, postId, categorySlug, commentId, replyId, actorUsername, actorUid, titleSnapshot, contentSnapshot]
   );
   // 顺手清理过期通知
   await cleanupOldNotifications();

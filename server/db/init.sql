@@ -208,6 +208,7 @@ CREATE TABLE `notifications` (
   `comment_id`       INT              DEFAULT NULL COMMENT '关联评论ID（精确定位用）',
   `reply_id`         INT              DEFAULT NULL COMMENT '关联回复ID（精确定位用）',
   `actor_username`   VARCHAR(50)      DEFAULT NULL COMMENT '触发者用户名（删除类通知为NULL，匿名）',
+  `actor_uid`        CHAR(15)         DEFAULT NULL COMMENT '触发者UID（用于跳转用户页）',
   `title_snapshot`   VARCHAR(200)     DEFAULT NULL COMMENT '帖子标题快照',
   `content_snapshot` VARCHAR(500)     DEFAULT NULL COMMENT '内容快照（评论/回复预览或被删内容）',
   `is_read`          BOOLEAN          NOT NULL DEFAULT FALSE,
