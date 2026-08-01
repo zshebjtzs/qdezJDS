@@ -57,6 +57,7 @@ Development follows a **Vibecoding** approach, assisted by the `deepseek-v4pro` 
 | **Forum** | Multi‑category (internal/public sections, department affairs); post sorting by time and popularity (server‑side pagination); Markdown + LaTeX editing and rendering (Vditor + KaTeX); tree‑structured comments/replies (max 2 levels, @mentions, nested indentation); paginated comments/replies; post permissions (allow browse/comment); admin/mod management (delete posts, modify permissions, board‑specific mute); user mute/unmute (global or board‑level); deduplicated post view counts |
 | **Cloud Drive** | Private/public storage; department‑shared spaces; upload with progress bar, download, delete; Chinese filename handling; server‑side search with keyword highlighting; paginated lists |
 | **Admin Console** | User management (search, ban/unban, grant/revoke moderator); board‑specific mute control; ban durations (1h/1d/3d/7d/30d or permanent); admin audit log with 90‑day retention |
+| **Notifications** | Navbar bell with unread indicator; auto‑notify on comment/reply, content deletion, permission changes, ban/unban; mark‑read on click, mark‑all‑read, single/batch delete; deleted‑content popup; detail jump scrolls to the specific comment/reply (90‑day retention) |
 | **General** | Responsive layout; pagination component; global CSS design tokens; security (Helmet, parameterized queries, DOMPurify, XSS protection); user directory; terms of use / privacy policy; auto‑logout on token expiry and ban interception |
 
 ---
@@ -109,13 +110,14 @@ qdezJDS/
 │   │   ├── forum/             # Forum core components (post list, detail, editor)
 │   │   ├── layout/            # Layout components (navbar, footer, user profile)
 │   │   ├── legal/             # Legal text display components
+│   │   ├── notifications/     # Notification components (single item, etc.)
 │   │   └── publicHome/        # Public homepage sub-components (about, activities)
 │   ├── markdown/              # Markdown editor & safe rendering (Vditor, KaTeX)
 │   ├── router/                # Vue Router config & navigation guards
-│   ├── stores/                # Pinia stores (user, cloud, etc.)
+│   ├── stores/                # Pinia stores (user, cloud, notifications, etc.)
 │   ├── styles/                # Global styles (CSS variables, base classes, cloud public styles)
 │   ├── utils/                 # Utilities (sort, search, password validation, etc.)
-│   ├── views/                 # Page components (Home, Login, Forum, Cloud, 404)
+│   ├── views/                 # Page components (Home, Login, Forum, Cloud, Notifications, 404)
 │   ├── App.vue                # Root component, dynamic layout
 │   └── main.js                # App entry, registers Pinia & Router
 ├── server/                    # Backend source
@@ -289,6 +291,17 @@ Key endpoints:
 | DELETE | `/api/admin/category/:categoryId/ban` | Unmute a board                | Admin       |
 | GET    | `/api/admin/logs`       | Admin audit log (paginated)         | Admin       |
 
+### Notifications
+
+| Method | Endpoint                       | Description                          | Permission     |
+| ------ | ------------------------------ | ------------------------------------ | -------------- |
+| GET    | `/api/notifications`           | Notification list (paginated)        | Authenticated  |
+| GET    | `/api/notifications/unread-count` | Unread count (bell indicator)     | Authenticated  |
+| PATCH  | `/api/notifications/:id/read`  | Mark one notification as read        | Authenticated  |
+| PATCH  | `/api/notifications/read-all`  | Mark all notifications as read       | Authenticated  |
+| DELETE | `/api/notifications/:id`       | Delete a notification                | Authenticated  |
+| DELETE | `/api/notifications`           | Batch delete notifications           | Authenticated  |
+
 ---
 
 ## Database Schema
@@ -304,6 +317,7 @@ Core business tables have been significantly upgraded, including:
 - **post_views**: View records for deduplicated counting.
 - **files**: Cloud drive file metadata.
 - **admin_logs**: Administrator audit trail with 90-day retention.
+- **notifications**: In-app notifications with 90-day retention, supporting single and batch deletion.
 
 Full SQL schema is available at `server/db/init.sql` .
 

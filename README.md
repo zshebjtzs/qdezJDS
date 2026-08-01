@@ -57,6 +57,7 @@
 | **论坛** | 多板块（内部/公开分区，部门事务板块）；帖子按时间和热度排序（后端分页）；Markdown + LaTeX 编辑与渲染（Vditor + KaTeX）；树形评论/回复（二级限制，@提及，嵌套缩进）；评论/回复分页加载；帖子权限控制（允许浏览/评论）；管理员/版主管理（删除帖子、修改权限、板块禁言）；用户禁言/解禁（全站或板块级）；帖子浏览量去重 |
 | **网盘** | 私有/公共网盘；部门共享空间；文件上传（含进度条）、下载、删除；中文文件名处理；文件搜索（后端高亮）；分页加载 |
 | **管理员控制台** | 用户管理（查看、搜索、封禁/解封、授予/撤销版主）；板块禁言控制；封禁支持有效期限（1h/1d/3d/7d/30d 或不限期）；管理员操作日志（保留90天，可审计） |
+| **站内通知** | 导航栏铃铛 + 未读红点；帖子被评论/回复、内容被删除、权限变更、封禁/解封时自动通知；通知页支持点击已读、全部已读、单条/批量删除；被删内容弹窗还原；详情跳转定位到具体评论/回复（保留90天） |
 | **通用** | 响应式布局；分页组件；全局 CSS 设计令牌；安全防护（Helmet、参数化查询、DOMPurify、XSS 防护）；用户列表；使用条款/隐私政策；Token 过期自动退出与封禁拦截 |
 
 ---
@@ -109,13 +110,14 @@ qdezJDS/
 │ │ ├── forum/ # 论坛核心组件（帖子列表、详情、编辑）
 │ │ ├── layout/ # 布局组件（导航栏、页脚、用户信息页）
 │ │ ├── legal/ # 法律文本展示组件
+│ │ ├── notifications/ # 站内通知组件（单条通知等）
 │ │ └── publicHome/ # 公共主页子组件（关于、活动）
 │ ├── markdown/ # Markdown 编辑器与安全渲染（Vditor、KaTeX）
 │ ├── router/ # Vue Router 配置与导航守卫
-│ ├── stores/ # Pinia 状态管理（用户、网盘等）
+│ ├── stores/ # Pinia 状态管理（用户、网盘、通知等）
 │ ├── styles/ # 全局样式（CSS 变量、组件基础类、网盘公共样式）
 │ ├── utils/ # 工具函数（排序、搜索、密码校验等）
-│ ├── views/ # 页面级组件（首页、登录、论坛、网盘、404）
+│ ├── views/ # 页面级组件（首页、登录、论坛、网盘、通知、404）
 │ ├── App.vue # 根组件，动态布局
 │ └── main.js # 应用入口，注册 Pinia、Router
 ├── server/ # 后端源码目录
@@ -292,6 +294,17 @@ Content-Type: application/json
 | DELETE | `/api/admin/category/:categoryId/ban` | 解除板块禁言 | 管理员 |
 | GET | `/api/admin/logs` | 操作日志（分页） | 管理员 |
 
+### 通知模块
+
+| 方法 | 路径 | 说明 | 权限 |
+| --- | --- | --- | --- |
+| GET | `/api/notifications` | 通知列表（分页） | 登录 |
+| GET | `/api/notifications/unread-count` | 未读通知数量（红点） | 登录 |
+| PATCH | `/api/notifications/:id/read` | 标记单条已读 | 登录 |
+| PATCH | `/api/notifications/read-all` | 全部标记已读 | 登录 |
+| DELETE | `/api/notifications/:id` | 删除单条通知 | 登录 |
+| DELETE | `/api/notifications` | 批量删除通知 | 登录 |
+
 ---
 
 ## 数据库设计
@@ -307,6 +320,7 @@ Content-Type: application/json
 - **post_views**：浏览记录，用于去重计数。
 - **files**：网盘文件元信息。
 - **admin_logs**：管理员操作审计日志，保留90天。
+- **notifications**：站内通知，保留90天，支持单条/批量删除。
 
 完整的建表语句请参考 `server/db/init.sql` 。
 
