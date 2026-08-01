@@ -41,10 +41,10 @@
       @page-change="handlePageChange"
     />
 
-    <!-- 被删内容弹窗 -->
+    <!-- 详情弹窗（被删内容 / 公告全文） -->
     <div v-if="detailModal.visible" class="modal-overlay" @click.self="detailModal.visible = false">
       <div class="modal-card">
-        <h4>已删除的内容</h4>
+        <h4>{{ detailModal.title }}</h4>
         <div class="deleted-content" v-html="renderDetailContent"></div>
         <div class="modal-actions">
           <button class="btn-cancel" @click="detailModal.visible = false">关闭</button>
@@ -64,6 +64,7 @@ import {
   deleteNotification,
   deleteBatchNotifications
 } from '@/api/notifications'
+import { getAnnouncement } from '@/api/announcements'
 import { renderMarkdown } from '@/markdown/renderer'
 import NotificationItem from '@/components/notifications/notificationItem.vue'
 import Pagination from '@/components/common/Pagination.vue'
@@ -79,9 +80,10 @@ const totalPages = ref(1)
 const editMode = ref(false)
 const selectedIds = ref([])
 
-// 被删内容弹窗
+// 详情弹窗（被删内容 / 公告全文）
 const detailModal = reactive({
   visible: false,
+  title: '',
   content: '',
 })
 
@@ -169,11 +171,23 @@ const handleBatchDelete = async () => {
   }
 }
 
-// 详情：被删内容弹窗 / 其它新标签页跳转
-const openDetail = (n) => {
+// 详情：被删内容/公告弹窗 / 其它新标签页跳转
+const openDetail = async (n) => {
   if (n.type === 'comment_deleted' || n.type === 'reply_deleted') {
+    detailModal.title = '已删除的内容'
     detailModal.content = n.content_snapshot || ''
     detailModal.visible = true
+    return
+  }
+  if (n.type === 'announcement') {
+    try {
+      const ann = await getAnnouncement(n.announcement_id)
+      detailModal.title = ann.title || '公告内容'
+      detailModal.content = ann.content || ''
+      detailModal.visible = true
+    } catch (err) {
+      alert('获取公告内容失败')
+    }
     return
   }
   const base = `/forum/${n.category_slug}/${n.post_id}`

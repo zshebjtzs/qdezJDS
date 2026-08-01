@@ -8,6 +8,7 @@
       <button :class="{ active: activeTab === 'users' }" @click="activeTab = 'users'">用户管理</button>
       <button :class="{ active: activeTab === 'categories' }" @click="activeTab = 'categories'">板块禁言</button>
       <button :class="{ active: activeTab === 'logs' }" @click="activeTab = 'logs'">操作日志</button>
+      <button :class="{ active: activeTab === 'announcements' }" @click="activeTab = 'announcements'">公告广播</button>
     </div>
 
     <!-- 用户列表区域 -->
@@ -70,6 +71,24 @@
           :totalPages="logTotalPages"
           @page-change="handleLogPageChange"
         />
+      </div>
+    </section>
+
+    <!-- 公告广播区域 -->
+    <section v-if="activeTab === 'announcements'" class="section">
+      <h3>公告广播</h3>
+      <p class="announcement-hint">发布后所有活跃用户都会在通知中心收到这条公告</p>
+      <input
+        v-model="announcementTitle"
+        class="announcement-title-input"
+        placeholder="公告标题（可选）"
+        maxlength="200"
+      />
+      <MarkdownEditor v-model="announcementContent" :height="300" />
+      <div class="announcement-actions">
+        <button class="btn-publish" @click="publishAnnouncement" :disabled="publishing">
+          {{ publishing ? '发布中...' : '发布公告' }}
+        </button>
       </div>
     </section>
 
@@ -165,6 +184,8 @@ import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import request from '@/api/request'
 import Pagination from '@/components/common/Pagination.vue'
+import MarkdownEditor from '@/markdown/editor.vue'
+import { createAnnouncement } from '@/api/announcements'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -425,6 +446,33 @@ const formatTime = (iso) => {
   const hour = d.getHours().toString().padStart(2, '0');
   const minute = d.getMinutes().toString().padStart(2, '0');
   return `${month}-${day} ${hour}:${minute}`;
+};
+
+// ---------- 公告广播 ----------
+const announcementTitle = ref('');
+const announcementContent = ref('');
+const publishing = ref(false);
+
+const publishAnnouncement = async () => {
+  if (!announcementContent.value.trim()) {
+    alert('公告内容不能为空');
+    return;
+  }
+  if (!confirm('确认发布这条公告给所有活跃用户吗？')) return;
+  publishing.value = true;
+  try {
+    await createAnnouncement(
+      announcementTitle.value.trim() || null,
+      announcementContent.value
+    );
+    alert('公告已发布');
+    announcementTitle.value = '';
+    announcementContent.value = '';
+  } catch (err) {
+    alert('发布失败：' + (err.response?.data?.error || err.message));
+  } finally {
+    publishing.value = false;
+  }
 };
 
 onMounted(() => {
@@ -830,4 +878,50 @@ h2 {
 .action-grant_mod { background: #e8f5e9; color: #2e7d32; }
 .action-revoke_mod { background: #fff3e0; color: #e65100; }
 .action-delete_post, .action-delete_comment, .action-delete_reply { background: #fce4ec; color: #c62828; }
+
+/* 公告广播 */
+.announcement-hint {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-md);
+}
+.announcement-title-input {
+  width: 100%;
+  max-width: 500px;
+  padding: var(--space-sm) 14px;
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  outline: none;
+  margin-bottom: var(--space-sm);
+  transition: border-color var(--transition-fast);
+}
+.announcement-title-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
+}
+.announcement-actions {
+  margin-top: var(--space-md);
+}
+.btn-publish {
+  padding: 10px 28px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-gradient);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-green);
+  transition: var(--transition-fast);
+}
+.btn-publish:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+.btn-publish:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
 </style>

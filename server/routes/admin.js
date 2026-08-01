@@ -13,6 +13,7 @@ import {
   unbanCategory,
   getLogs
 } from '../controllers/adminController.js';
+import { createAnnouncement } from '../controllers/announcementController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -82,6 +83,12 @@ router.delete('/category/:categoryId/ban', authMiddleware, (req, res, next) => {
 router.get('/logs', authMiddleware, (req, res, next) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
   getLogs(req, res, next);
+});
+
+// 发布公告（广播给所有活跃用户）
+router.post('/announcements', authMiddleware, (req, res, next) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: '无权访问' });
+  createAnnouncement(req, res, next);
 });
 
 export default router;

@@ -207,6 +207,7 @@ CREATE TABLE `notifications` (
   `category_slug`    VARCHAR(50)      DEFAULT NULL COMMENT '板块slug（构造跳转URL）',
   `comment_id`       INT              DEFAULT NULL COMMENT '关联评论ID（精确定位用）',
   `reply_id`         INT              DEFAULT NULL COMMENT '关联回复ID（精确定位用）',
+  `announcement_id`  INT              DEFAULT NULL COMMENT '关联公告ID（公告广播用）',
   `actor_username`   VARCHAR(50)      DEFAULT NULL COMMENT '触发者用户名（删除类通知为NULL，匿名）',
   `actor_uid`        CHAR(15)         DEFAULT NULL COMMENT '触发者UID（用于跳转用户页）',
   `title_snapshot`   VARCHAR(200)     DEFAULT NULL COMMENT '帖子标题快照',
@@ -220,7 +221,22 @@ CREATE TABLE `notifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
--- 12. 插入默认板块数据
+-- 12. 管理员公告表
+-- =============================================
+DROP TABLE IF EXISTS `announcements`;
+CREATE TABLE `announcements` (
+  `id`             INT              NOT NULL AUTO_INCREMENT,
+  `admin_id`       INT              NOT NULL COMMENT '发布管理员ID',
+  `admin_username` VARCHAR(50)      DEFAULT NULL COMMENT '发布管理员用户名快照',
+  `title`          VARCHAR(200)     DEFAULT NULL COMMENT '公告标题（可选）',
+  `content`        MEDIUMTEXT       NOT NULL COMMENT '公告正文（Markdown，不限字数）',
+  `created_at`     TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`admin_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- 13. 插入默认板块数据
 -- =============================================
 INSERT INTO `categories` (`name`, `slug`, `type`, `department`, `sort_order`) VALUES
 ('站务公告', 'announcements', 'public', 'none', 1),

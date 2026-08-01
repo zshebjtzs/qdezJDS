@@ -83,6 +83,12 @@ const renderText = computed(() => {
       return `您的${content}`
     case 'unbanned':
       return `您的${content}`
+    case 'announcement': {
+      // 公告不内联展示内容，仅显示标题（content_snapshot 存标题），详情弹窗看全文
+      return content
+        ? `新公告：${content}，点击「详情」查看完整内容`
+        : `管理员发布了一条新公告，点击「详情」查看完整内容`
+    }
     default:
       return content
   }
@@ -90,7 +96,7 @@ const renderText = computed(() => {
 
 // 是否有"详情"按钮
 const hasDetail = computed(() => {
-  return ['comment', 'reply', 'permission_changed', 'comment_deleted', 'reply_deleted'].includes(props.notification.type)
+  return ['comment', 'reply', 'permission_changed', 'comment_deleted', 'reply_deleted', 'announcement'].includes(props.notification.type)
 })
 
 // 格式化时间

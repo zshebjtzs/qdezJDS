@@ -15,6 +15,7 @@ import adminRoutes from './routes/admin.js';
 import userRoutes from './routes/user.js';
 import userListRoutes from './routes/userList.js';
 import notificationRoutes from './routes/notification.js';
+import announcementRoutes from './routes/announcement.js';
 
 // 导入错误处理中间件
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -55,6 +56,9 @@ app.use('/api/users', userListRoutes);
 
 // 站内通知接口
 app.use('/api/notifications', notificationRoutes);
+
+// 公告接口（详情弹窗用）
+app.use('/api/announcements', announcementRoutes);
 
 // 管理员接口
 app.use('/api/admin', adminRoutes);
