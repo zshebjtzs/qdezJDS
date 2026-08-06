@@ -15,6 +15,7 @@
   /* ---------- 功能色 ---------- */
   --color-danger:          #c0392b;
   --color-danger-light:    #fff4f4;   /* 删除按钮背景 */
+  --color-danger-border:   #ffcccc;   /* 危险按钮描边 */
   --color-warning-bg:      #fff3cd;   /* 黄底警告提示框 */
   --color-warning-text:    #856404;   /* 警告文字 */
   --color-warning-border:  #ffeeba;
@@ -28,6 +29,24 @@
   --color-border:          #eef3f0;   /* 默认边框色 */
   --color-border-dark:     #d0ddd5;   /* 较深边框（按钮、输入框） */
   --color-bg-page:         #f5f5f5;   /* 页面背景（登录页等） */
+
+  /* ---------- 科技深色（Hero 等深色场景，可复用） ---------- */
+  --color-tech-1:           #0f2027;   /* 深色渐变：起点（深海蓝黑） */
+  --color-tech-2:           #203a43;   /* 深色渐变：中段（蓝灰） */
+  --color-tech-3:           #2c5364;   /* 深色渐变：终点（青蓝） */
+  --color-tech-gradient:    linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+  --color-accent-mint:      #5cd6a3;   /* 深色底主强调色（薄荷绿） */
+  --color-accent-soft:      #8be3bc;   /* 深色底弱强调色（浅薄荷） */
+  --color-accent-border:    rgba(66, 185, 131, 0.2); /* 深色卡片/玻璃绿描边 */
+  --color-accent-glow:      rgba(66, 185, 131, 0.25); /* 绿色光晕（辉光、文字投影） */
+  --color-accent-ring:      rgba(66, 185, 131, 0.12); /* 聚焦/悬停光环 */
+
+  /* ---------- 表面色（白底与浅灰底，消除散落硬编码） ---------- */
+  --color-surface:          #ffffff;   /* 卡片、输入框等主体表面 */
+  --color-surface-muted:    #f5f5f5;   /* 弱表面（取消按钮、灰标签） */
+  --color-surface-hover:    #e0e0e0;   /* 弱表面悬停 */
+  --color-border-input:     #d9e5df;   /* 输入框边框 */
+  --color-text-placeholder: #aaa;      /* 占位提示文字 */
 
   /* ---------- 圆角 ---------- */
   --radius-sm:             8px;       /* 小元素：按钮、标签、输入框 */
@@ -49,6 +68,14 @@
   --shadow-md:             0 8px 24px rgba(0, 0, 0, 0.08);
   --shadow-lg:             0 15px 30px rgba(0, 0, 0, 0.1);
   --shadow-green:          0 6px 14px rgba(66, 185, 131, 0.3);  /* 绿色按钮专属阴影 */
+  --shadow-lift:           0 12px 24px -8px rgba(15, 32, 39, 0.2);  /* 卡片悬停上浮 */
+  --shadow-glow-green:     0 0 24px rgba(66, 185, 131, 0.35);       /* 主按钮/辉光元素 */
+  --shadow-tech:           0 20px 40px -12px rgba(15, 32, 39, 0.4); /* 深色大卡（Hero） */
+  --shadow-tech-hover:     0 24px 50px -14px rgba(15, 32, 39, 0.5); /* 深色大卡悬停 */
+  --shadow-modal:          0 20px 50px -12px rgba(15, 32, 39, 0.35);/* 弹窗浮起 */
+
+  /* ---------- 玻璃质感 ---------- */
+  --blur-glass:            6px;         /* 毛玻璃遮罩模糊半径 */
 
   /* ---------- 过渡动画 ---------- */
   --transition-fast:       0.2s ease;

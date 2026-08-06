@@ -12,13 +12,15 @@
       <div class="logo">青岛二中机电社</div>
     </div>
 
-    <!-- 增强型 Hero 欢迎区 -->
+    <!-- 增强型 Hero 欢迎区（深色科技风 + 星座粒子场） -->
     <div class="hero">
+      <canvas ref="particleCanvas" class="hero-particles"></canvas>
       <div class="hero-glow"></div>
       <div class="hero-content">
-        <span class="hero-badge">WELCOME</span>
-        <h1>欢迎来到机电社</h1>
-        <p>这里是展示社团风采与交流的平台</p>
+        <span class="hero-badge">MECHATRONICS SOCIETY</span>
+        <h1>欢迎来到 <span class="hero-accent">机电社</span></h1>
+        <p class="hero-slogan">动手创造 · 智慧共享</p>
+        <p class="hero-desc">这里是展示社团风采与交流的平台</p>
         <div class="hero-actions">
           <router-link to="/home/about" class="hero-btn primary">了解社团</router-link>
           <router-link to="/home/activity" class="hero-btn secondary">查看活动 →</router-link>
@@ -37,12 +39,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { initParticles } from '@/utils/particles'
 
 const route = useRoute()
 const router = useRouter()
 const showExpiredTip = ref(false)
+const particleCanvas = ref(null)
+let particleCleanup = null
 
 const scrollToContent = () => {
   const pageElement = document.querySelector('.about-page, .activity-page')
@@ -52,6 +57,11 @@ const scrollToContent = () => {
 }
 
 onMounted(() => {
+  // 初始化星座粒子场
+  if (particleCanvas.value) {
+    particleCleanup = initParticles(particleCanvas.value)
+  }
+
   if (route.query.expired === '1') {
     showExpiredTip.value = true
     setTimeout(() => {
@@ -61,6 +71,14 @@ onMounted(() => {
       delete newQuery.expired
       router.replace({ query: newQuery })
     }, 5000)
+  }
+})
+
+onBeforeUnmount(() => {
+  // 清理粒子动画与事件监听
+  if (particleCleanup) {
+    particleCleanup.destroy()
+    particleCleanup = null
   }
 })
 </script>
@@ -113,32 +131,42 @@ onMounted(() => {
   color: var(--color-primary);
 }
 
-/* 增强型 Hero 区域 —— 视觉深度优化 */
+/* 增强型 Hero 区域 —— 深色科技风 + 星座粒子场 */
 .hero {
   text-align: center;
   padding: 80px 20px 60px;
   margin: 40px 0 20px;
-  background: linear-gradient(145deg, var(--color-primary-bg) 0%, var(--color-primary-light) 100%);
+  background: var(--color-tech-gradient);
   border-radius: 32px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 15px 30px -10px rgba(66, 185, 131, 0.1);
-  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-tech);
+  border: 1px solid var(--color-accent-border);
   transition: box-shadow var(--transition-fast);
 }
 
 .hero:hover {
-  box-shadow: 0 20px 40px -12px rgba(66, 185, 131, 0.2);
+  box-shadow: var(--shadow-tech-hover);
 }
 
-/* 背景光晕装饰 */
+/* 星座粒子画布层 */
+.hero-particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 背景光晕装饰（品牌绿光晕，增强深色氛围） */
 .hero-glow {
   position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(66, 185, 131, 0.1) 0%, transparent 70%);
-  top: -150px;
-  right: -100px;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, var(--color-accent-glow) 0%, transparent 70%);
+  top: -180px;
+  right: -120px;
   border-radius: 50%;
   z-index: 0;
 }
@@ -151,32 +179,43 @@ onMounted(() => {
 .hero-badge {
   display: inline-block;
   padding: 6px var(--space-md);
-  background: var(--color-primary-light);
-  color: var(--color-primary-hover);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-accent-soft);
   border-radius: var(--radius-full);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 1.5px;
-  margin-bottom: 20px;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
   backdrop-filter: blur(4px);
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(66, 185, 131, 0.35);
 }
 
 .hero h1 {
   font-size: 3.2rem;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   font-weight: 800;
-  background: linear-gradient(135deg, #1e2b39 0%, #2c5f4a 80%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #fff;
   letter-spacing: -0.5px;
   line-height: 1.2;
+  text-shadow: 0 2px 20px var(--color-accent-glow);
 }
 
-.hero p {
-  font-size: 1.3rem;
-  color: var(--color-text-secondary);
+.hero-accent {
+  color: var(--color-accent-mint);
+}
+
+.hero-slogan {
+  font-size: 1.5rem;
+  color: var(--color-accent-soft);
+  max-width: 650px;
+  margin: 0 auto 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.hero-desc {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
   max-width: 650px;
   margin: 0 auto 30px;
   font-weight: 400;
@@ -214,16 +253,16 @@ onMounted(() => {
 }
 
 .hero-btn.secondary {
-  background: transparent;
-  color: var(--color-text);
-  border: 1.5px solid var(--color-border-dark);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
 }
 
 .hero-btn.secondary:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--color-accent-mint);
+  color: var(--color-accent-soft);
   transform: translateY(-2px);
-  background: var(--color-primary-light);
+  background: rgba(66, 185, 131, 0.15);
 }
 
 /* 向下滚动提示 —— 纯交互引导，无新增内容区块 */
@@ -245,7 +284,7 @@ onMounted(() => {
 
 .scroll-text {
   font-size: 0.85rem;
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.65);
   letter-spacing: 1.5px;
   text-transform: uppercase;
   margin-bottom: var(--space-sm);
@@ -255,8 +294,8 @@ onMounted(() => {
 .scroll-arrow {
   width: 24px;
   height: 24px;
-  border-left: 2px solid var(--color-primary);
-  border-bottom: 2px solid var(--color-primary);
+  border-left: 2px solid var(--color-accent-mint);
+  border-bottom: 2px solid var(--color-accent-mint);
   transform: rotate(-45deg);
   animation: bounce 2s infinite;
 }
@@ -321,8 +360,11 @@ onMounted(() => {
   .hero h1 {
     font-size: 2.3rem;
   }
-  .hero p {
-    font-size: 1.1rem;
+  .hero-slogan {
+    font-size: 1.2rem;
+  }
+  .hero-desc {
+    font-size: 1rem;
   }
   .hero-actions {
     flex-direction: column;
